@@ -1,0 +1,42 @@
+# SHADOW BODY — Android .gitignore (Phase 1)
+# Keeps this dedicated repo scoped to the SHADOW BODY project only.
+
+# Gradle
+.gradle/
+build/
+*/build/
+!src/**/build/
+
+# Android Studio / IntelliJ
+.idea/
+*.iml
+*.iws
+*.ipr
+local.properties
+captures/
+.externalNativeBuild/
+.cxx/
+*.ap_
+*.dex
+
+# Keystores & signing (never commit real keys)
+*.jks
+*.keystore
+*.p12
+*.pem
+*.mobileprovision
+*.key
+secrets.properties
+keystore.properties
+
+# Generated Room schemas are INTENTIONALLY committed (migration safety).
+# Uncomment the next line only if you decide otherwise:
+# */schemas/
+
+# OS
+.DS_Store
+Thumbs.db
+Desktop.ini
+
+# Logs
+*.log

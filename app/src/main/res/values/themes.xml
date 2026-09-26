@@ -1,0 +1,9 @@
+<?xml version="1.0" encoding="utf-8"?>
+<resources>
+    <!-- Base launcher theme; Compose takes over rendering inside MainActivity. -->
+    <style name="Theme.ShadowBody" parent="android:Theme.Material.NoActionBar">
+        <item name="android:windowBackground">@color/shadow_background</item>
+        <item name="android:statusBarColor">@color/shadow_background</item>
+        <item name="android:navigationBarColor">@color/shadow_background</item>
+    </style>
+</resources>
