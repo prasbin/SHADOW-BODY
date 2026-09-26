@@ -9,6 +9,7 @@ import com.shadowbody.app.data.repository.BaselineRepository
 import com.shadowbody.app.data.repository.ExerciseRepository
 import com.shadowbody.app.data.repository.MorningActivationRepository
 import com.shadowbody.app.data.repository.MorningRoutineRepository
+import com.shadowbody.app.data.repository.NutritionRepository
 import com.shadowbody.app.data.repository.PlanRepository
 import com.shadowbody.app.data.repository.ProfileRepository
 import com.shadowbody.app.data.repository.ReadinessRepository
@@ -96,6 +97,15 @@ class ShadowBodyApp : Application() {
             database.morningRoutineLogDao(),
             database.morningRoutineDao(),
             database.morningRoutineStepDao(),
+        )
+    }
+
+    // --- Phase 6: nutrition ---
+    val nutritionRepository: NutritionRepository by lazy {
+        NutritionRepository(
+            database.nutritionGoalDao(),
+            database.foodLogDao(),
+            database.hydrationLogDao(),
         )
     }
 }

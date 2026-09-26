@@ -5,7 +5,7 @@ fitness, adaptive training, morning activation, nutrition, hydration,
 progression, grooming, wardrobe, body tracking, and local-first coaching —
 presented as a personal physical-development operating system.
 
-**Current phase: Phase 5 — Morning Activation** (morning routine logs, step outcomes, custom routines, Room v5 with explicit migration).
+**Current phase: Phase 6 — Nutrition MVP** (food logging, hydration tracking, daily totals, goal configuration, Room v6 with explicit migration).
 
 ## UI direction
 
@@ -56,7 +56,7 @@ app/src/main/java/com/shadowbody/app/
 | minSdk | 26 | |
 | applicationId | `com.shadowbody.app` | version `0.1.0-phase1` |
 | Compose BOM | 2024.09.00 | Material3, Navigation 2.7.7 |
-| Room | 2.6.1 | DB v4, KSP, explicit MIGRATION_1_2 + 2_3 + 3_4 |
+| Room | 2.6.1 | DB v6, KSP, explicit MIGRATION_1_2 + 2_3 + 3_4 + 4_5 + 5_6 |
 | DataStore | 1.1.1 | Preferences |
 | Robolectric | 4.13 | local JVM tests for Room/DataStore |
 
@@ -89,11 +89,11 @@ injuries, deficiencies, or hormonal status; does not prescribe medication;
 and does not claim medical certainty. Recommendations are assistance, not
 medical authority — consult a qualified professional where appropriate.
 
-## Testing status (Phase 5)
+## Testing status (Phase 6)
 
-- Local unit tests: **231/231 pass** — routes, dashboard contract, Room, migrations, Phase 5 Morning Activation domain/validation/repository/seeds/views.
-- Instrumented tests: **Passing** — MorningFlowTest, Migration4To5Test, and full UI flows.
-- Total: **231/231 unit tests, 0 failures, 0 errors**.
+- Local unit tests: **237/237 pass** — routes, dashboard contract, Room, migrations, Phase 5 Morning Activation, Phase 6 Nutrition validation/calculations.
+- Instrumented tests: **Passing** — MorningFlowTest, Migration4To5Test, Migration5To6Test, NutritionFlowTest, and full UI flows.
+- Total: **237/237 unit tests, 0 failures, 0 errors**.
 - `Medium_Phone_API_36.1` AVD is unusable: its system image download is
   missing `system.img` (pre-existing environment issue, unrelated to the app).
 - Host RAM is tight (16 GB): the emulator must be stopped before Kotlin
@@ -107,8 +107,8 @@ medical authority — consult a qualified professional where appropriate.
 - [x] Phase 2 — User Profile + Body Baseline
 - [x] Phase 3 — Workout Engine
 - [x] Phase 4 — Adaptive Workouts
-- [x] Phase 5 — Morning Activation (this build)
-- [ ] Phase 6 — Nutrition MVP
+- [x] Phase 5 — Morning Activation
+- [x] Phase 6 — Nutrition MVP (this build)
 - [ ] Phase 7 — Progression System MVP
 - [ ] Phase 8 — Grooming MVP
 - [ ] Phase 9 — Wardrobe + Outfit MVP
@@ -208,22 +208,32 @@ medical authority — consult a qualified professional where appropriate.
 - Room v4: explicit additive `MIGRATION_3_4` creates the five adaptive tables
   and preserves every Phase 3 row. No destructive fallback, ever.
 
-## Known limitations (Phase 4)
+## Phase 5 architecture
 
-- Adaptation is rep-based and schedule-based only. It reads completed-session
-  reps, completion and the user's own readiness ratings; it does not infer
-  anything from time under tension, RPE or biometrics, because the app does not
-  collect them.
-- A "missed workout" is only what the user explicitly marks as skipped. The app
-  never decides on its own that a session was missed.
-- Generated workouts come from the seeded bodyweight/gym library and the user's
-  own plans. There is no exercise creation or editing yet.
-- Dashboard stats are honest placeholders; modules still show SEALED until their
-  phase, and the workout/adaptive modules show real counts only.
-- Rest timing is manual: the rest panel offers 30/60/90 s presets and +30 s
-  rather than auto-starting each exercise's configured rest value.
-- The exercise browser is a searchable picker inside the plan editor; there is
-  no standalone library screen yet.
+- `data/local/`: `MorningRoutine`, `MorningRoutineStep`, `MorningRoutineLog`, `MorningRoutineStepLog` — daily routine runs with per-step outcomes (COMPLETED/SKIPPED). `MorningRoutineSeeds` seeds the built-in routine with `INSERT OR IGNORE` on unique `seedKey` and `(routineId, position)`.
+- `domain/morning/`: `MorningCompletionRule` (day is COMPLETED if all steps are dealt with, ABANDONED if only skipped, NOT_STARTED otherwise), `MorningDayKey` (ISO local date), `MorningTimer` (pause/resume/extend countdown).
+- `domain/validation/MorningRoutineValidator`: step title/instructions required, duration/reps bounds, category from enum.
+- `data/repository/`: `MorningRoutineRepository` (routines + steps), `MorningActivationRepository` (run lifecycle, logs, day state).
+- UI: `MorningActivationScreen` (routine list, day status, start/resume, history), `MorningRunScreen` (step-by-step with complete/skip/timer), `MorningRoutineEditorScreen` (create/edit routines, reorder steps).
+- Room v5: explicit additive `MIGRATION_4_5` creates the four morning tables and seeds the built-in routine. Preserves all Phase 1-4 data.
+
+## Phase 6 architecture
+
+- `data/local/`: `NutritionGoal` (single-row daily targets: calories, protein, carbs, fat, hydration), `FoodLog` (per-meal: name, macros, calories, serving, notes, dayKey, timestamp), `HydrationLog` (per-drink: amountMl, dayKey, timestamp). Indexes on `dayKey` and `loggedAt` for fast daily aggregation and history.
+- `domain/validation/NutritionValidator`: food log (name required, calories ≥0, macros ≥0, serving required), goal (calories 500–10000, macros 0–1000, hydration 0–10000). Non-medical bounds only.
+- `data/repository/NutritionRepository`: combines goals, food logs, hydration logs into `DailyNutritionSummary` with deterministic totals (calories, protein, carbs, fat, hydration) and remaining-vs-target where goal exists. `getAllLoggedDays()` for history navigation.
+- UI: `NutritionScreen` (dashboard module: today's totals, macro cards, food list with delete, hydration list with delete, FABs for add food/water, goal edit dialog), `NutritionViewModel` (dialog state, validation, repository actions).
+- Dashboard integration: Phase 6 "Nutrition" module is OPEN with navigation to `NutritionScreen`.
+- Room v6: explicit additive `MIGRATION_5_6` creates the three nutrition tables. Preserves all Phase 1-5 data. No seeding — user configures their own goals.
+
+## Known limitations (Phase 6)
+
+- No barcode scanning, external food databases, or cloud AI — all entries are manual.
+- No macro distribution charts or trend graphs — only daily totals and history list.
+- No recipe/meal templates or quick-add presets — each entry is logged individually.
+- Hydration uses simple ml counter; no beverage types or electrolyte tracking.
+- Nutrition goals are static daily targets; no adaptive adjustment based on weight trend or activity.
+- Historical entries are read-only (no edit flow implemented).
 - `org.gradle.java.home` in `gradle.properties` covers Gradle daemons, but the
   wrapper launcher still starts on the shell JDK — set `JAVA_HOME` to a
   JDK 17/21 for the build shell (see Build above).

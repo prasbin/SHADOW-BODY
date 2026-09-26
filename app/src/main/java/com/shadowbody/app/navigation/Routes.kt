@@ -16,12 +16,15 @@ object Routes {
     const val MORNING = "morning"
     const val MORNING_RUN = "morning_run/{logId}"
     const val MORNING_EDITOR = "morning_editor?routineId={routineId}"
+    const val NUTRITION = "nutrition"
+    const val NUTRITION_HISTORY = "nutrition_history"
+    const val NUTRITION_GOAL = "nutrition_goal"
 
     /** Every route registered in the NavHost. Used by tests to catch typos. */
     val all: List<String> = listOf(
         DASHBOARD, SETTINGS, PROFILE, PROFILE_EDIT, BASELINE_HISTORY,
         WORKOUT, PLAN_DETAIL, PLAN_EDITOR, ACTIVE_WORKOUT, WORKOUT_RESULT,
-        ADAPTIVE, MORNING, MORNING_RUN, MORNING_EDITOR,
+        ADAPTIVE, MORNING, MORNING_RUN, MORNING_EDITOR, NUTRITION, NUTRITION_HISTORY, NUTRITION_GOAL,
     )
 
     const val START = DASHBOARD

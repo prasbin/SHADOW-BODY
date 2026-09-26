@@ -40,6 +40,8 @@ import com.shadowbody.app.ui.morning.MorningRoutineEditorScreen
 import com.shadowbody.app.ui.morning.MorningRoutineEditorViewModel
 import com.shadowbody.app.ui.morning.MorningRunScreen
 import com.shadowbody.app.ui.morning.MorningRunViewModel
+import com.shadowbody.app.ui.nutrition.NutritionScreen
+import com.shadowbody.app.ui.nutrition.NutritionViewModel
 import com.shadowbody.app.ui.profile.ProfileEditScreen
 import com.shadowbody.app.ui.profile.ProfileEditViewModel
 import com.shadowbody.app.ui.profile.ProfileScreen
@@ -81,6 +83,7 @@ fun ShadowBodyNavHost() {
                 onOpenWorkout = { navController.navigate(Routes.WORKOUT) },
                 onOpenAdaptive = { navController.navigate(Routes.ADAPTIVE) },
                 onOpenActivation = { navController.navigate(Routes.MORNING) },
+                onOpenNutrition = { navController.navigate(Routes.NUTRITION) },
             )
         }
         composable(Routes.SETTINGS) {
@@ -323,6 +326,13 @@ fun ShadowBodyNavHost() {
                 if (saved.saved) navController.popBackStack()
             }
             MorningRoutineEditorScreen(
+                viewModel = vm,
+                onBack = { navController.popBackStack() },
+            )
+        }
+        composable(Routes.NUTRITION) {
+            val vm: NutritionViewModel = viewModel(factory = NutritionViewModel.Factory(app))
+            NutritionScreen(
                 viewModel = vm,
                 onBack = { navController.popBackStack() },
             )

@@ -440,6 +440,59 @@ object Migrations {
     }
 
     /**
+     * v5 -> v6: creates the Phase 6 nutrition tables (`nutrition_goal`, `food_log`, `hydration_log`).
+     * Purely additive: preserves all Phase 1-5 data.
+     */
+    val MIGRATION_5_6 = object : Migration(5, 6) {
+        override fun migrate(db: SupportSQLiteDatabase) {
+            db.execSQL(
+                "CREATE TABLE IF NOT EXISTS `nutrition_goal` (" +
+                    "`id` INTEGER NOT NULL, " +
+                    "`calorieTarget` INTEGER NOT NULL, " +
+                    "`proteinGrams` INTEGER NOT NULL, " +
+                    "`carbGrams` INTEGER NOT NULL, " +
+                    "`fatGrams` INTEGER NOT NULL, " +
+                    "`hydrationMlTarget` INTEGER NOT NULL, " +
+                    "`goalType` TEXT NOT NULL, " +
+                    "`updatedAt` INTEGER NOT NULL, " +
+                    "PRIMARY KEY(`id`))",
+            )
+            db.execSQL(
+                "CREATE TABLE IF NOT EXISTS `food_log` (" +
+                    "`id` INTEGER PRIMARY KEY AUTOINCREMENT NOT NULL, " +
+                    "`dayKey` TEXT NOT NULL, " +
+                    "`name` TEXT NOT NULL, " +
+                    "`calories` INTEGER NOT NULL, " +
+                    "`proteinGrams` REAL NOT NULL, " +
+                    "`carbGrams` REAL NOT NULL, " +
+                    "`fatGrams` REAL NOT NULL, " +
+                    "`servingText` TEXT NOT NULL, " +
+                    "`notes` TEXT NOT NULL, " +
+                    "`loggedAt` INTEGER NOT NULL)",
+            )
+            db.execSQL(
+                "CREATE INDEX IF NOT EXISTS `index_food_log_dayKey` ON `food_log` (`dayKey`)",
+            )
+            db.execSQL(
+                "CREATE INDEX IF NOT EXISTS `index_food_log_loggedAt` ON `food_log` (`loggedAt`)",
+            )
+            db.execSQL(
+                "CREATE TABLE IF NOT EXISTS `hydration_log` (" +
+                    "`id` INTEGER PRIMARY KEY AUTOINCREMENT NOT NULL, " +
+                    "`dayKey` TEXT NOT NULL, " +
+                    "`amountMl` INTEGER NOT NULL, " +
+                    "`loggedAt` INTEGER NOT NULL)",
+            )
+            db.execSQL(
+                "CREATE INDEX IF NOT EXISTS `index_hydration_log_dayKey` ON `hydration_log` (`dayKey`)",
+            )
+            db.execSQL(
+                "CREATE INDEX IF NOT EXISTS `index_hydration_log_loggedAt` ON `hydration_log` (`loggedAt`)",
+            )
+        }
+    }
+
+    /**
      * Inserts the built-in routine and its steps into an upgrading database.
      * Shared with nothing else on purpose: fresh installs seed through
      * [MorningRoutineSeeds] in the onCreate callback.
