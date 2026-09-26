@@ -50,6 +50,7 @@ fun DashboardScreen(
     onOpenProfile: () -> Unit,
     onOpenWorkout: () -> Unit,
     onOpenAdaptive: () -> Unit = {},
+    onOpenActivation: () -> Unit = {},
     viewModel: DashboardViewModel = viewModel(),
 ) {
     val state by viewModel.uiState.collectAsState()
@@ -207,6 +208,14 @@ fun DashboardScreen(
                         statusOverride = "OPEN",
                         statusAvailable = true,
                         onClick = onOpenAdaptive,
+                    )
+                } else if (module.id == "activation") {
+                    // Phase 5: morning activation is live and reachable.
+                    ModuleRow(
+                        module = module,
+                        statusOverride = "OPEN",
+                        statusAvailable = true,
+                        onClick = onOpenActivation,
                     )
                 } else {
                     ModuleRow(module = module)

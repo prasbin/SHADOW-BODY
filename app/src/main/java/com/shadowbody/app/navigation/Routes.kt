@@ -13,12 +13,15 @@ object Routes {
     const val ACTIVE_WORKOUT = "active/{sessionId}"
     const val WORKOUT_RESULT = "result/{sessionId}"
     const val ADAPTIVE = "adaptive"
+    const val MORNING = "morning"
+    const val MORNING_RUN = "morning_run/{logId}"
+    const val MORNING_EDITOR = "morning_editor?routineId={routineId}"
 
     /** Every route registered in the NavHost. Used by tests to catch typos. */
     val all: List<String> = listOf(
         DASHBOARD, SETTINGS, PROFILE, PROFILE_EDIT, BASELINE_HISTORY,
         WORKOUT, PLAN_DETAIL, PLAN_EDITOR, ACTIVE_WORKOUT, WORKOUT_RESULT,
-        ADAPTIVE,
+        ADAPTIVE, MORNING, MORNING_RUN, MORNING_EDITOR,
     )
 
     const val START = DASHBOARD
@@ -28,4 +31,7 @@ object Routes {
         if (planId == null) "plan_editor" else "plan_editor?planId=$planId"
     fun activeWorkout(sessionId: Long) = "active/$sessionId"
     fun workoutResult(sessionId: Long) = "result/$sessionId"
+    fun morningRun(logId: Long) = "morning_run/$logId"
+    fun morningEditor(routineId: Long? = null) =
+        if (routineId == null) "morning_editor" else "morning_editor?routineId=$routineId"
 }

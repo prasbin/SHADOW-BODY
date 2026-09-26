@@ -320,4 +320,166 @@ object Migrations {
             )
         }
     }
+
+    /**
+     * v4 -> v5: creates the Phase 5 morning activation tables and seeds the
+     * built-in routine.
+     *
+     * Purely additive: no Phase 1-4 table is touched, so profile, baselines,
+     * workout history and adaptive history all survive an upgrade untouched.
+     *
+     * The seed is OR IGNORE on the unique `seedKey` index and the unique
+     * `(routineId, position)` step index, so this migration is safe to run
+     * repeatedly and converges on the same single routine a fresh install gets
+     * from [MorningRoutineSeeds].
+     */
+    val MIGRATION_4_5 = object : Migration(4, 5) {
+        override fun migrate(db: SupportSQLiteDatabase) {
+            db.execSQL(
+                "CREATE TABLE IF NOT EXISTS `morning_routine` (" +
+                    "`id` INTEGER PRIMARY KEY AUTOINCREMENT NOT NULL, " +
+                    "`seedKey` TEXT, " +
+                    "`name` TEXT NOT NULL, " +
+                    "`description` TEXT NOT NULL, " +
+                    "`isActive` INTEGER NOT NULL, " +
+                    "`sortOrder` INTEGER NOT NULL, " +
+                    "`createdAt` INTEGER NOT NULL, " +
+                    "`updatedAt` INTEGER NOT NULL)",
+            )
+            db.execSQL(
+                "CREATE UNIQUE INDEX IF NOT EXISTS `index_morning_routine_seedKey` " +
+                    "ON `morning_routine` (`seedKey`)",
+            )
+            db.execSQL(
+                "CREATE INDEX IF NOT EXISTS `index_morning_routine_sortOrder` " +
+                    "ON `morning_routine` (`sortOrder`)",
+            )
+            db.execSQL(
+                "CREATE TABLE IF NOT EXISTS `morning_routine_step` (" +
+                    "`id` INTEGER PRIMARY KEY AUTOINCREMENT NOT NULL, " +
+                    "`routineId` INTEGER NOT NULL, " +
+                    "`title` TEXT NOT NULL, " +
+                    "`instructions` TEXT NOT NULL, " +
+                    "`category` TEXT NOT NULL, " +
+                    "`targetDurationSec` INTEGER, " +
+                    "`targetReps` INTEGER, " +
+                    "`position` INTEGER NOT NULL, " +
+                    "`isEnabled` INTEGER NOT NULL, " +
+                    "`isSeeded` INTEGER NOT NULL, " +
+                    "FOREIGN KEY(`routineId`) REFERENCES `morning_routine`(`id`) " +
+                    "ON UPDATE NO ACTION ON DELETE CASCADE)",
+            )
+            db.execSQL(
+                "CREATE UNIQUE INDEX IF NOT EXISTS " +
+                    "`index_morning_routine_step_routineId_position` " +
+                    "ON `morning_routine_step` (`routineId`, `position`)",
+            )
+            db.execSQL(
+                "CREATE INDEX IF NOT EXISTS `index_morning_routine_step_routineId` " +
+                    "ON `morning_routine_step` (`routineId`)",
+            )
+            db.execSQL(
+                "CREATE TABLE IF NOT EXISTS `morning_routine_log` (" +
+                    "`id` INTEGER PRIMARY KEY AUTOINCREMENT NOT NULL, " +
+                    "`routineId` INTEGER, " +
+                    "`routineName` TEXT NOT NULL, " +
+                    "`dayKey` TEXT NOT NULL, " +
+                    "`attempt` INTEGER NOT NULL, " +
+                    "`startedAt` INTEGER NOT NULL, " +
+                    "`completedAt` INTEGER, " +
+                    "`status` TEXT NOT NULL, " +
+                    "`completedSteps` INTEGER NOT NULL, " +
+                    "`skippedSteps` INTEGER NOT NULL, " +
+                    "`totalSteps` INTEGER NOT NULL, " +
+                    "`notes` TEXT NOT NULL, " +
+                    "FOREIGN KEY(`routineId`) REFERENCES `morning_routine`(`id`) " +
+                    "ON UPDATE NO ACTION ON DELETE SET NULL)",
+            )
+            db.execSQL(
+                "CREATE UNIQUE INDEX IF NOT EXISTS " +
+                    "`index_morning_routine_log_routineId_dayKey_attempt` " +
+                    "ON `morning_routine_log` (`routineId`, `dayKey`, `attempt`)",
+            )
+            db.execSQL(
+                "CREATE INDEX IF NOT EXISTS `index_morning_routine_log_dayKey` " +
+                    "ON `morning_routine_log` (`dayKey`)",
+            )
+            db.execSQL(
+                "CREATE INDEX IF NOT EXISTS `index_morning_routine_log_startedAt` " +
+                    "ON `morning_routine_log` (`startedAt`)",
+            )
+            db.execSQL(
+                "CREATE TABLE IF NOT EXISTS `morning_routine_step_log` (" +
+                    "`id` INTEGER PRIMARY KEY AUTOINCREMENT NOT NULL, " +
+                    "`logId` INTEGER NOT NULL, " +
+                    "`stepId` INTEGER, " +
+                    "`position` INTEGER NOT NULL, " +
+                    "`title` TEXT NOT NULL, " +
+                    "`category` TEXT NOT NULL, " +
+                    "`targetDurationSec` INTEGER, " +
+                    "`targetReps` INTEGER, " +
+                    "`outcome` TEXT NOT NULL, " +
+                    "`elapsedSec` INTEGER, " +
+                    "`recordedAt` INTEGER NOT NULL, " +
+                    "FOREIGN KEY(`logId`) REFERENCES `morning_routine_log`(`id`) " +
+                    "ON UPDATE NO ACTION ON DELETE CASCADE, " +
+                    "FOREIGN KEY(`stepId`) REFERENCES `morning_routine_step`(`id`) " +
+                    "ON UPDATE NO ACTION ON DELETE SET NULL)",
+            )
+            db.execSQL(
+                "CREATE UNIQUE INDEX IF NOT EXISTS " +
+                    "`index_morning_routine_step_log_logId_position` " +
+                    "ON `morning_routine_step_log` (`logId`, `position`)",
+            )
+            db.execSQL(
+                "CREATE INDEX IF NOT EXISTS `index_morning_routine_step_log_stepId` " +
+                    "ON `morning_routine_step_log` (`stepId`)",
+            )
+            seedDefaultMorningRoutine(db)
+        }
+    }
+
+    /**
+     * Inserts the built-in routine and its steps into an upgrading database.
+     * Shared with nothing else on purpose: fresh installs seed through
+     * [MorningRoutineSeeds] in the onCreate callback.
+     */
+    internal fun seedDefaultMorningRoutine(db: SupportSQLiteDatabase, now: Long = 0L) {
+        db.execSQL(
+            "INSERT OR IGNORE INTO `morning_routine` " +
+                "(`seedKey`, `name`, `description`, `isActive`, `sortOrder`, `createdAt`, " +
+                "`updatedAt`) VALUES (?, ?, ?, 1, 0, ?, ?)",
+            arrayOf(
+                MorningRoutineSeeds.DEFAULT_SEED_KEY,
+                MorningRoutineSeeds.DEFAULT_NAME,
+                MorningRoutineSeeds.DEFAULT_DESCRIPTION,
+                now,
+                now,
+            ),
+        )
+        db.query(
+            "SELECT `id` FROM `morning_routine` WHERE `seedKey` = ? LIMIT 1",
+            arrayOf<Any>(MorningRoutineSeeds.DEFAULT_SEED_KEY),
+        ).use { cursor ->
+            if (!cursor.moveToFirst()) return
+            val routineId = cursor.getLong(0)
+            MorningRoutineSeeds.STEPS.forEachIndexed { index, step ->
+                db.execSQL(
+                    "INSERT OR IGNORE INTO `morning_routine_step` " +
+                        "(`routineId`, `title`, `instructions`, `category`, " +
+                        "`targetDurationSec`, `targetReps`, `position`, `isEnabled`, " +
+                        "`isSeeded`) VALUES (?, ?, ?, ?, ?, ?, ?, 1, 1)",
+                    arrayOf<Any?>(
+                        routineId,
+                        step.title,
+                        step.instructions,
+                        step.category.name,
+                        step.targetDurationSec,
+                        step.targetReps,
+                        index,
+                    ),
+                )
+            }
+        }
+    }
 }

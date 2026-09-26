@@ -6,6 +6,9 @@ import com.shadowbody.app.domain.model.Equipment
 import com.shadowbody.app.domain.model.ExerciseCategory
 import com.shadowbody.app.domain.model.FitnessLevel
 import com.shadowbody.app.domain.model.Goal
+import com.shadowbody.app.domain.model.MorningLogStatus
+import com.shadowbody.app.domain.model.MorningStepCategory
+import com.shadowbody.app.domain.model.MorningStepOutcome
 import com.shadowbody.app.domain.model.MuscleGroup
 import com.shadowbody.app.domain.model.ProgressionState
 import com.shadowbody.app.domain.model.RecommendationStatus
@@ -101,4 +104,27 @@ class Converters {
     @TypeConverter
     fun stringToRecommendationStatus(raw: String): RecommendationStatus =
         runCatching { RecommendationStatus.valueOf(raw) }.getOrDefault(RecommendationStatus.ACTIVE)
+
+    // --- Morning activation enums (Phase 5). Same unknown-token policy. ---
+
+    @TypeConverter
+    fun morningStepCategoryToString(value: MorningStepCategory): String = value.name
+
+    @TypeConverter
+    fun stringToMorningStepCategory(raw: String): MorningStepCategory =
+        runCatching { MorningStepCategory.valueOf(raw) }.getOrDefault(MorningStepCategory.MOBILITY)
+
+    @TypeConverter
+    fun morningLogStatusToString(value: MorningLogStatus): String = value.name
+
+    @TypeConverter
+    fun stringToMorningLogStatus(raw: String): MorningLogStatus =
+        runCatching { MorningLogStatus.valueOf(raw) }.getOrDefault(MorningLogStatus.ABANDONED)
+
+    @TypeConverter
+    fun morningStepOutcomeToString(value: MorningStepOutcome): String = value.name
+
+    @TypeConverter
+    fun stringToMorningStepOutcome(raw: String): MorningStepOutcome =
+        runCatching { MorningStepOutcome.valueOf(raw) }.getOrDefault(MorningStepOutcome.SKIPPED)
 }

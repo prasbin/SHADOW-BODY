@@ -17,6 +17,9 @@ import androidx.room.TypeConverters
  * - v4: + adaptive workouts — [ReadinessReport], [ExerciseAdaptation],
  *   [MissedWorkout], [WorkoutRecommendation], [RecommendedExercise],
  *   [AdaptationCheckpoint] (see [Migrations.MIGRATION_3_4]).
+ * - v5: + morning activation — [MorningRoutine], [MorningRoutineStep],
+ *   [MorningRoutineLog], [MorningRoutineStepLog]
+ *   (see [Migrations.MIGRATION_4_5]).
  *
  * Every version bump ships an explicit Migration; destructive fallback is
  * never enabled. Schemas are exported to `app/schemas` and committed.
@@ -38,6 +41,10 @@ import androidx.room.TypeConverters
         WorkoutRecommendation::class,
         RecommendedExercise::class,
         AdaptationCheckpoint::class,
+        MorningRoutine::class,
+        MorningRoutineStep::class,
+        MorningRoutineLog::class,
+        MorningRoutineStepLog::class,
     ],
     version = ShadowBodyDatabase.VERSION,
     exportSchema = true,
@@ -56,9 +63,12 @@ abstract class ShadowBodyDatabase : RoomDatabase() {
     abstract fun adaptationDao(): AdaptationDao
     abstract fun missedWorkoutDao(): MissedWorkoutDao
     abstract fun recommendationDao(): RecommendationDao
+    abstract fun morningRoutineDao(): MorningRoutineDao
+    abstract fun morningRoutineStepDao(): MorningRoutineStepDao
+    abstract fun morningRoutineLogDao(): MorningRoutineLogDao
 
     companion object {
-        const val VERSION = 4
+        const val VERSION = 5
         const val NAME = "shadow_body.db"
 
         @Volatile
@@ -75,6 +85,7 @@ abstract class ShadowBodyDatabase : RoomDatabase() {
                         Migrations.MIGRATION_1_2,
                         Migrations.MIGRATION_2_3,
                         Migrations.MIGRATION_3_4,
+                        Migrations.MIGRATION_4_5,
                     )
                     .build().also { instance = it }
             }

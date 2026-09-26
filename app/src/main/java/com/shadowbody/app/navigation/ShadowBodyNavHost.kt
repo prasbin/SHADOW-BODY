@@ -34,6 +34,12 @@ import com.shadowbody.app.ui.baseline.BaselineHistoryScreen
 import com.shadowbody.app.ui.baseline.BaselineViewModel
 import com.shadowbody.app.ui.dashboard.DashboardScreen
 import com.shadowbody.app.ui.dashboard.DashboardViewModel
+import com.shadowbody.app.ui.morning.MorningActivationScreen
+import com.shadowbody.app.ui.morning.MorningActivationViewModel
+import com.shadowbody.app.ui.morning.MorningRoutineEditorScreen
+import com.shadowbody.app.ui.morning.MorningRoutineEditorViewModel
+import com.shadowbody.app.ui.morning.MorningRunScreen
+import com.shadowbody.app.ui.morning.MorningRunViewModel
 import com.shadowbody.app.ui.profile.ProfileEditScreen
 import com.shadowbody.app.ui.profile.ProfileEditViewModel
 import com.shadowbody.app.ui.profile.ProfileScreen
@@ -74,6 +80,7 @@ fun ShadowBodyNavHost() {
                 onOpenProfile = { navController.navigate(Routes.PROFILE) },
                 onOpenWorkout = { navController.navigate(Routes.WORKOUT) },
                 onOpenAdaptive = { navController.navigate(Routes.ADAPTIVE) },
+                onOpenActivation = { navController.navigate(Routes.MORNING) },
             )
         }
         composable(Routes.SETTINGS) {
@@ -258,6 +265,64 @@ fun ShadowBodyNavHost() {
         composable(Routes.ADAPTIVE) {
             val vm: AdaptiveViewModel = viewModel(factory = AdaptiveViewModel.Factory(app))
             AdaptiveScreen(
+                viewModel = vm,
+                onBack = { navController.popBackStack() },
+            )
+        }
+        composable(Routes.MORNING) {
+            val vm: MorningActivationViewModel =
+                viewModel(factory = MorningActivationViewModel.Factory(app))
+            val started by vm.startedLogId.collectAsState()
+            LaunchedEffect(started) {
+                started?.let {
+                    // Consumed first: the event is one-shot, so returning from
+                    // the run — or rotating here — cannot navigate into it again.
+                    vm.consumeStartedLogId()
+                    navController.navigate(Routes.morningRun(it))
+                }
+            }
+            MorningActivationScreen(
+                viewModel = vm,
+                onBack = { navController.popBackStack() },
+                onOpenRun = { navController.navigate(Routes.morningRun(it)) },
+                onEdit = { navController.navigate(Routes.morningEditor(it)) },
+            )
+        }
+        composable(
+            Routes.MORNING_RUN,
+            arguments = listOf(navArgument("logId") { type = NavType.LongType }),
+        ) { entry ->
+            val logId = entry.arguments?.getLong("logId") ?: 0L
+            val vm: MorningRunViewModel = viewModel(
+                key = "morning-run-$logId",
+                factory = MorningRunViewModel.Factory(app, logId),
+            )
+            MorningRunScreen(
+                viewModel = vm,
+                onFinished = { navController.popBackStack() },
+                onBack = { navController.popBackStack() },
+            )
+        }
+        composable(
+            Routes.MORNING_EDITOR,
+            arguments = listOf(navArgument("routineId") {
+                type = NavType.LongType
+                defaultValue = 0L
+            }),
+        ) { entry ->
+            val routineId = entry.arguments?.getLong("routineId") ?: 0L
+            val vm: MorningRoutineEditorViewModel = viewModel(
+                key = "morning-editor-$routineId",
+                factory = MorningRoutineEditorViewModel.Factory(
+                    app,
+                    routineId.takeIf { it > 0L },
+                ),
+            )
+            val saved by vm.state.collectAsState()
+            LaunchedEffect(saved.saved) {
+                if (saved.saved) navController.popBackStack()
+            }
+            MorningRoutineEditorScreen(
                 viewModel = vm,
                 onBack = { navController.popBackStack() },
             )

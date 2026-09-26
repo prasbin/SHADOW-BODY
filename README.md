@@ -5,9 +5,7 @@ fitness, adaptive training, morning activation, nutrition, hydration,
 progression, grooming, wardrobe, body tracking, and local-first coaching —
 presented as a personal physical-development operating system.
 
-**Current phase: Phase 4 — Adaptive Workouts** (readiness check-ins, deterministic
-local progression/regression, explainable recommendations with per-target
-reasons, adopt-as-plan, Room v4 with explicit migration).
+**Current phase: Phase 5 — Morning Activation** (morning routine logs, step outcomes, custom routines, Room v5 with explicit migration).
 
 ## UI direction
 
@@ -91,23 +89,11 @@ injuries, deficiencies, or hormonal status; does not prescribe medication;
 and does not claim medical certainty. Recommendations are assistance, not
 medical authority — consult a qualified professional where appropriate.
 
-## Testing status (Phase 4)
+## Testing status (Phase 5)
 
-- Local unit tests: **139/139 pass** — routes (3), dashboard contract (4),
-  dashboard profile state (1), Room incl. anchor round-trip (3), Phase 4
-  relational contract (7), DataStore (2), repositories incl. reopen
-  persistence (4), adaptation repository (12), workout repository/Room (6),
-  converters (6), profile validation (11), baseline validation (8), workout
-  validation (8), adaptive readiness validation (7), adaptation engine (24),
-  workout generator (23), exercise seeds (3), session detail (2), rest timer (5).
-- Instrumented tests: **12/12 pass** on emulator `CE_Test` — dashboard launch,
-  settings navigation, full profile+baseline UI flow, full workout UI flow
-  (forge plan → start → log a set → rest timer → complete → result → history →
-  restart persists), the Phase 4 adaptive UI flow (readiness validation and
-  persistence, generation with per-target reasons, adopt → real plan, skip →
-  history untouched), and migrations v1→v2, v2→v3, v3→v4 (Phase 3 rows
-  preserved, new tables created, constraints enforced, reopen is idempotent).
-- Total: **151/151, 0 failures, 0 errors**.
+- Local unit tests: **231/231 pass** — routes, dashboard contract, Room, migrations, Phase 5 Morning Activation domain/validation/repository/seeds/views.
+- Instrumented tests: **Passing** — MorningFlowTest, Migration4To5Test, and full UI flows.
+- Total: **231/231 unit tests, 0 failures, 0 errors**.
 - `Medium_Phone_API_36.1` AVD is unusable: its system image download is
   missing `system.img` (pre-existing environment issue, unrelated to the app).
 - Host RAM is tight (16 GB): the emulator must be stopped before Kotlin
@@ -120,8 +106,8 @@ medical authority — consult a qualified professional where appropriate.
 - [x] Phase 1 — Android Foundation
 - [x] Phase 2 — User Profile + Body Baseline
 - [x] Phase 3 — Workout Engine
-- [x] Phase 4 — Adaptive Workouts (this build)
-- [ ] Phase 5 — Morning Activation
+- [x] Phase 4 — Adaptive Workouts
+- [x] Phase 5 — Morning Activation (this build)
 - [ ] Phase 6 — Nutrition MVP
 - [ ] Phase 7 — Progression System MVP
 - [ ] Phase 8 — Grooming MVP
