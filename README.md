@@ -27,9 +27,13 @@ app/src/main/java/com/shadowbody/app/
 ├── ui/components/             # SystemPanel, StatCard, SectionHeader
 ├── ui/dashboard/              # DashboardScreen + DashboardViewModel
 ├── ui/settings/               # SettingsScreen + SettingsViewModel
+├── ui/workout/                # Training hall, plan editor/detail, active session, result
 ├── domain/model/              # SystemModule / ModuleState (pure Kotlin)
+├── domain/validation/         # ProfileValidator, BaselineValidator, WorkoutValidator
+├── domain/workout/            # RestTimer (lifecycle-aware rest clock)
 └── data/
-    ├── local/                 # ShadowBodyDatabase, SchemaAnchor(+Dao)
+    ├── local/                 # ShadowBodyDatabase (v3), entities, DAOs, Migrations
+    ├── repository/            # Profile, Baseline, Exercise, Plan, Session
     └── preferences/           # AppPreferences (DataStore wrapper)
 ```
 
@@ -51,7 +55,7 @@ app/src/main/java/com/shadowbody/app/
 | minSdk | 26 | |
 | applicationId | `com.shadowbody.app` | version `0.1.0-phase1` |
 | Compose BOM | 2024.09.00 | Material3, Navigation 2.7.7 |
-| Room | 2.6.1 | DB v2, KSP, explicit MIGRATION_1_2 |
+| Room | 2.6.1 | DB v3, KSP, explicit MIGRATION_1_2 + MIGRATION_2_3 |
 | DataStore | 1.1.1 | Preferences |
 | Robolectric | 4.13 | local JVM tests for Room/DataStore |
 
@@ -84,27 +88,33 @@ injuries, deficiencies, or hormonal status; does not prescribe medication;
 and does not claim medical certainty. Recommendations are assistance, not
 medical authority — consult a qualified professional where appropriate.
 
-## Testing status (Phase 2)
+## Testing status (Phase 3)
 
-- Local unit tests: **42/42 pass** — routes (3), dashboard contract (4),
+- Local unit tests: **66/66 pass** — routes (3), dashboard contract (4),
   dashboard profile state (1), Room incl. anchor round-trip (3), DataStore (2),
   repositories incl. reopen persistence (4), converters (6), profile
-  validation (11), baseline validation (8).
-- Instrumented tests: **4/4 pass** on emulator `CE_Test` — dashboard launch,
-  settings navigation, migration v1→v2 (anchor preserved, new tables work),
-  full profile+baseline UI flow (create → persist → baseline → history →
-  edit → activity restart still persisted).
-- Total: **46/46, 0 failures, 0 errors**.
+  validation (11), baseline validation (8), exercise seeds (3), session detail
+  (2), workout repository/Room (6), workout validation (8), rest timer (5).
+- Instrumented tests: **6/6 pass** on emulator `CE_Test` — dashboard launch,
+  settings navigation, full profile+baseline UI flow, migration v1→v2
+  (anchor preserved, new tables work), migration v2→v3 (profile + baseline rows
+  survive, 28 exercises seeded), and the full workout UI flow (forge plan with
+  two exercises → reorder targets → start session → log a set → rest timer
+  start/pause/resume/reset → complete → real result totals → history entry →
+  activity restart still persisted).
+- Total: **72/72, 0 failures, 0 errors**.
 - `Medium_Phone_API_36.1` AVD is unusable: its system image download is
   missing `system.img` (pre-existing environment issue, unrelated to the app).
+- Host RAM is tight (16 GB): the emulator must be stopped before Kotlin
+  compilation and restarted before `connectedDebugAndroidTest`, otherwise the
+  QEMU process is killed mid-run by memory pressure.
 
 ## Roadmap
 
 - [x] Phase 0 — Environment + read-only audit
 - [x] Phase 1 — Android Foundation
-- [x] Phase 2 — User Profile + Body Baseline (this build)
-- [ ] Phase 2 — User Profile + Body Baseline
-- [ ] Phase 3 — Workout Engine
+- [x] Phase 2 — User Profile + Body Baseline
+- [x] Phase 3 — Workout Engine (this build)
 - [ ] Phase 4 — Adaptive Workouts
 - [ ] Phase 5 — Morning Activation
 - [ ] Phase 6 — Nutrition MVP
@@ -136,9 +146,43 @@ medical authority — consult a qualified professional where appropriate.
 - Room v2: explicit `MIGRATION_1_2` creates both tables; anchor row verified
   intact post-migration. No destructive fallback, ever.
 
-## Known limitations (Phase 2)
+## Phase 3 architecture
 
-- Dashboard stats are honest placeholders; modules show SEALED until their phase.
+- `data/local/`: `Exercise` (28 seeded bodyweight/gym movements, unique name,
+  muscle group, equipment, difficulty, instructions), `WorkoutPlan` +
+  `WorkoutPlanExercise` (ordered slots: sets, reps-or-duration, rest seconds),
+  `WorkoutSession` + `SessionExercise` + `SessionSet` (recorded actuals).
+  Deleting a plan keeps history (`planId` → `SET NULL`); exercise rows are
+  protected by `RESTRICT`; `session_exercise`/`session_set` cascade from the
+  session; `(sessionId, position)` and `(sessionExerciseId, setNumber)` are
+  unique so ordering is deterministic.
+- Starting a session is one `@Transaction`: plan slots are snapshotted into
+  session rows, so later plan edits never rewrite recorded history.
+- `data/repository/`: `ExerciseRepository` (duplicate-safe `INSERT OR IGNORE`
+  seeding on both migration and first use), `PlanRepository` (create/update,
+  reorder, delete), `SessionRepository` (start, log set, toggle exercise,
+  finish, abandon, delete, history).
+- `domain/validation/WorkoutValidator`: plan name/duration, per-slot
+  sets/reps/time/rest bounds, and set logs. A set cannot be completed until at
+  least one rep or second is recorded, so history never claims unearned work.
+- `domain/workout/RestTimer`: coroutine-owned ticking with start, pause, resume,
+  reset (stop/cancel) and +30 s, driven by `StateFlow` and cleared on dispose.
+- UI: `WorkoutListScreen` (plans + recent history), `PlanEditorScreen`
+  (add/reorder/remove slots, exercise search), `PlanDetailScreen` (targets,
+  equipment warnings, start), `ActiveWorkoutScreen` (set logging, progress,
+  rest panel), `WorkoutResultScreen` (real totals from stored rows).
+- Room v3: explicit `MIGRATION_2_3` creates the six workout tables and seeds the
+  exercise library while preserving v2 profile/baseline data. No destructive
+  fallback, ever.
+
+## Known limitations (Phase 3)
+
+- Dashboard stats are honest placeholders; later modules show SEALED until their
+  phase, and the workout module shows real counts only.
+- Rest timing is manual: the rest panel offers 30/60/90 s presets and +30 s
+  rather than auto-starting each exercise's configured rest value.
+- The exercise browser is a searchable picker inside the plan editor; there is
+  no standalone library screen yet.
 - `org.gradle.java.home` in `gradle.properties` covers Gradle daemons, but the
   wrapper launcher still starts on the shell JDK — set `JAVA_HOME` to a
   JDK 17/21 for the build shell (see Build above).

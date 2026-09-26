@@ -48,6 +48,7 @@ import com.shadowbody.app.ui.theme.LocalShadowSpacing
 fun DashboardScreen(
     onOpenSettings: () -> Unit,
     onOpenProfile: () -> Unit,
+    onOpenWorkout: () -> Unit,
     viewModel: DashboardViewModel = viewModel(),
 ) {
     val state by viewModel.uiState.collectAsState()
@@ -181,13 +182,21 @@ fun DashboardScreen(
             }
 
             items(state.modules, key = { it.id }) { module ->
-                // Phase 2: the profile module is live; the rest stay sealed.
+                // Phase 2: the profile module is live; Phase 3: workout too.
+                // Everything else stays sealed.
                 if (module.id == "profile") {
                     ModuleRow(
                         module = module,
                         statusOverride = if (state.profileConfigured) "OPEN" else "CREATE",
                         statusAvailable = true,
                         onClick = onOpenProfile,
+                    )
+                } else if (module.id == "workout") {
+                    ModuleRow(
+                        module = module,
+                        statusOverride = "OPEN",
+                        statusAvailable = true,
+                        onClick = onOpenWorkout,
                     )
                 } else {
                     ModuleRow(module = module)

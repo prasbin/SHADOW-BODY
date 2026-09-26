@@ -4,8 +4,9 @@ import androidx.room.migration.Migration
 import androidx.sqlite.db.SupportSQLiteDatabase
 
 /**
- * Explicit non-destructive migrations. Phase 1 data (schema_anchor) is
- * preserved by every migration — destructive fallback is never enabled.
+ * Explicit non-destructive migrations. Phase 1 data (schema_anchor) and
+ * Phase 2 data (profile, baselines) are preserved by every migration —
+ * destructive fallback is never enabled.
  */
 object Migrations {
 
@@ -39,6 +40,160 @@ object Migrations {
                     "`bodyFatPct` REAL, " +
                     "`notes` TEXT)",
             )
+        }
+    }
+
+    /**
+     * v2 -> v3: creates the Phase 3 workout tables and seeds the exercise
+     * library for upgrading databases (fresh installs seed via
+     * [ExerciseSeeds] in the onCreate callback instead).
+     *
+     * All seed inserts are OR IGNORE on the unique name index, so repeated
+     * migration runs never duplicate rows.
+     */
+    val MIGRATION_2_3 = object : Migration(2, 3) {
+        override fun migrate(db: SupportSQLiteDatabase) {
+            db.execSQL(
+                "CREATE TABLE IF NOT EXISTS `exercise` (" +
+                    "`id` INTEGER PRIMARY KEY AUTOINCREMENT NOT NULL, " +
+                    "`name` TEXT NOT NULL, " +
+                    "`muscleGroup` TEXT NOT NULL, " +
+                    "`category` TEXT NOT NULL, " +
+                    "`equipment` TEXT NOT NULL, " +
+                    "`description` TEXT NOT NULL, " +
+                    "`instructions` TEXT NOT NULL, " +
+                    "`difficulty` TEXT NOT NULL, " +
+                    "`isActive` INTEGER NOT NULL, " +
+                    "`isSeeded` INTEGER NOT NULL)",
+            )
+            db.execSQL(
+                "CREATE UNIQUE INDEX IF NOT EXISTS `index_exercise_name` " +
+                    "ON `exercise` (`name`)",
+            )
+            db.execSQL(
+                "CREATE TABLE IF NOT EXISTS `workout_plan` (" +
+                    "`id` INTEGER PRIMARY KEY AUTOINCREMENT NOT NULL, " +
+                    "`name` TEXT NOT NULL, " +
+                    "`description` TEXT NOT NULL, " +
+                    "`targetDurationMin` INTEGER, " +
+                    "`isActive` INTEGER NOT NULL, " +
+                    "`createdAt` INTEGER NOT NULL, " +
+                    "`updatedAt` INTEGER NOT NULL)",
+            )
+            db.execSQL(
+                "CREATE TABLE IF NOT EXISTS `workout_plan_exercise` (" +
+                    "`id` INTEGER PRIMARY KEY AUTOINCREMENT NOT NULL, " +
+                    "`planId` INTEGER NOT NULL, " +
+                    "`exerciseId` INTEGER NOT NULL, " +
+                    "`position` INTEGER NOT NULL, " +
+                    "`targetSets` INTEGER NOT NULL, " +
+                    "`targetReps` INTEGER, " +
+                    "`targetDurationSec` INTEGER, " +
+                    "`restSec` INTEGER NOT NULL, " +
+                    "`notes` TEXT NOT NULL, " +
+                    "FOREIGN KEY(`planId`) REFERENCES `workout_plan`(`id`) " +
+                    "ON UPDATE NO ACTION ON DELETE CASCADE, " +
+                    "FOREIGN KEY(`exerciseId`) REFERENCES `exercise`(`id`) " +
+                    "ON UPDATE NO ACTION ON DELETE RESTRICT)",
+            )
+            db.execSQL(
+                "CREATE INDEX IF NOT EXISTS `index_workout_plan_exercise_planId_position` " +
+                    "ON `workout_plan_exercise` (`planId`, `position`)",
+            )
+            db.execSQL(
+                "CREATE UNIQUE INDEX IF NOT EXISTS " +
+                    "`index_workout_plan_exercise_planId_exerciseId` " +
+                    "ON `workout_plan_exercise` (`planId`, `exerciseId`)",
+            )
+            db.execSQL(
+                "CREATE TABLE IF NOT EXISTS `workout_session` (" +
+                    "`id` INTEGER PRIMARY KEY AUTOINCREMENT NOT NULL, " +
+                    "`planId` INTEGER, " +
+                    "`name` TEXT NOT NULL, " +
+                    "`startedAt` INTEGER NOT NULL, " +
+                    "`endedAt` INTEGER, " +
+                    "`status` TEXT NOT NULL, " +
+                    "FOREIGN KEY(`planId`) REFERENCES `workout_plan`(`id`) " +
+                    "ON UPDATE NO ACTION ON DELETE SET NULL)",
+            )
+            db.execSQL("CREATE INDEX IF NOT EXISTS `index_workout_session_startedAt` ON `workout_session` (`startedAt`)")
+            db.execSQL("CREATE INDEX IF NOT EXISTS `index_workout_session_status` ON `workout_session` (`status`)")
+            db.execSQL(
+                "CREATE TABLE IF NOT EXISTS `session_exercise` (" +
+                    "`id` INTEGER PRIMARY KEY AUTOINCREMENT NOT NULL, " +
+                    "`sessionId` INTEGER NOT NULL, " +
+                    "`exerciseId` INTEGER NOT NULL, " +
+                    "`position` INTEGER NOT NULL, " +
+                    "`isCompleted` INTEGER NOT NULL, " +
+                    "FOREIGN KEY(`sessionId`) REFERENCES `workout_session`(`id`) " +
+                    "ON UPDATE NO ACTION ON DELETE CASCADE, " +
+                    "FOREIGN KEY(`exerciseId`) REFERENCES `exercise`(`id`) " +
+                    "ON UPDATE NO ACTION ON DELETE RESTRICT)",
+            )
+            db.execSQL(
+                "CREATE INDEX IF NOT EXISTS `index_session_exercise_sessionId_position` " +
+                    "ON `session_exercise` (`sessionId`, `position`)",
+            )
+            db.execSQL(
+                "CREATE TABLE IF NOT EXISTS `session_set` (" +
+                    "`id` INTEGER PRIMARY KEY AUTOINCREMENT NOT NULL, " +
+                    "`sessionExerciseId` INTEGER NOT NULL, " +
+                    "`setNumber` INTEGER NOT NULL, " +
+                    "`targetReps` INTEGER, " +
+                    "`targetDurationSec` INTEGER, " +
+                    "`actualReps` INTEGER, " +
+                    "`actualDurationSec` INTEGER, " +
+                    "`weightKg` REAL, " +
+                    "`isCompleted` INTEGER NOT NULL, " +
+                    "FOREIGN KEY(`sessionExerciseId`) REFERENCES `session_exercise`(`id`) " +
+                    "ON UPDATE NO ACTION ON DELETE CASCADE)",
+            )
+            db.execSQL(
+                "CREATE UNIQUE INDEX IF NOT EXISTS " +
+                    "`index_session_set_sessionExerciseId_setNumber` " +
+                    "ON `session_set` (`sessionExerciseId`, `setNumber`)",
+            )
+            seedExercises(db)
+        }
+
+        private fun seed(db: SupportSQLiteDatabase, values: String) {
+            db.execSQL(
+                "INSERT OR IGNORE INTO `exercise` (`name`, `muscleGroup`, " +
+                    "`category`, `equipment`, `description`, `instructions`, " +
+                    "`difficulty`, `isActive`, `isSeeded`) VALUES $values",
+            )
+        }
+
+        /** Mirrors [ExerciseSeeds.ALL]; keep both lists in sync. */
+        private fun seedExercises(db: SupportSQLiteDatabase) {
+            seed(db, "('Push-Up', 'CHEST', 'BODYWEIGHT', 'BODYWEIGHT', 'Classic chest and triceps press from the floor.', 'Hands under shoulders, body straight. Lower chest near floor, press up.', 'BEGINNER', 1, 1)")
+            seed(db, "('Incline Push-Up', 'CHEST', 'BODYWEIGHT', 'BODYWEIGHT', 'Easier push-up variation using an elevated surface.', 'Hands on a bench or step. Keep body rigid, lower and press.', 'BEGINNER', 1, 1)")
+            seed(db, "('Bodyweight Squat', 'LEGS', 'BODYWEIGHT', 'BODYWEIGHT', 'Foundational lower-body movement.', 'Feet shoulder width, sit hips back and down, knees track over toes, stand.', 'BEGINNER', 1, 1)")
+            seed(db, "('Forward Lunge', 'LEGS', 'BODYWEIGHT', 'BODYWEIGHT', 'Single-leg strength and balance builder.', 'Step forward, lower until both knees near 90 degrees, push back.', 'BEGINNER', 1, 1)")
+            seed(db, "('Glute Bridge', 'GLUTES', 'BODYWEIGHT', 'BODYWEIGHT', 'Glute and hip activation from the floor.', 'Back on floor, feet flat. Drive hips up, squeeze glutes, lower slowly.', 'BEGINNER', 1, 1)")
+            seed(db, "('Calf Raise', 'LEGS', 'BODYWEIGHT', 'BODYWEIGHT', 'Standing calf strengthener.', 'Rise onto the balls of your feet, pause, lower with control.', 'BEGINNER', 1, 1)")
+            seed(db, "('Plank', 'CORE', 'CORE', 'BODYWEIGHT', 'Timed core stability hold.', 'Forearms and toes support, body straight, brace core, breathe.', 'BEGINNER', 1, 1)")
+            seed(db, "('Side Plank', 'CORE', 'CORE', 'BODYWEIGHT', 'Oblique and lateral core hold.', 'One forearm and feet stacked, hips lifted, hold each side.', 'INTERMEDIATE', 1, 1)")
+            seed(db, "('Crunch', 'CORE', 'CORE', 'BODYWEIGHT', 'Basic upper-abdominal curl.', 'Back on floor, knees bent. Curl shoulders up slightly, lower slowly.', 'BEGINNER', 1, 1)")
+            seed(db, "('Mountain Climber', 'FULL_BODY', 'CARDIO', 'BODYWEIGHT', 'Dynamic plank with alternating knee drives.', 'Plank position, drive knees toward chest alternately at a steady pace.', 'INTERMEDIATE', 1, 1)")
+            seed(db, "('Burpee', 'FULL_BODY', 'CARDIO', 'BODYWEIGHT', 'Full-body conditioning movement.', 'Squat, jump feet back to plank, optional push-up, jump up with arms overhead.', 'ADVANCED', 1, 1)")
+            seed(db, "('Jumping Jack', 'FULL_BODY', 'CARDIO', 'BODYWEIGHT', 'Simple warm-up and conditioning move.', 'Jump feet out while raising arms, return to start, keep rhythm.', 'BEGINNER', 1, 1)")
+            seed(db, "('Superman', 'BACK', 'BODYWEIGHT', 'BODYWEIGHT', 'Lower-back and posterior chain lift.', 'Lie face down, lift chest and legs together, hold briefly, lower.', 'BEGINNER', 1, 1)")
+            seed(db, "('Bird Dog', 'CORE', 'CORE', 'BODYWEIGHT', 'Contralateral core stability drill.', 'On all fours, extend opposite arm and leg, hold, switch sides.', 'BEGINNER', 1, 1)")
+            seed(db, "('Wall Sit', 'LEGS', 'BODYWEIGHT', 'BODYWEIGHT', 'Timed isometric leg hold.', 'Back flat to wall, thighs parallel to floor, hold the position.', 'BEGINNER', 1, 1)")
+            seed(db, "('High Knees', 'FULL_BODY', 'CARDIO', 'BODYWEIGHT', 'Running-in-place cardio drill.', 'Drive knees up toward hips alternately, pump arms, stay tall.', 'BEGINNER', 1, 1)")
+            seed(db, "('Bench Dip', 'ARMS', 'BODYWEIGHT', 'BENCH', 'Triceps dip using a bench or sturdy chair.', 'Hands behind on edge, lower body by bending elbows, press up.', 'INTERMEDIATE', 1, 1)")
+            seed(db, "('Dumbbell Row', 'BACK', 'STRENGTH', 'DUMBBELLS', 'Single-arm back pull.', 'Hinge at hips, pull dumbbell to ribs, squeeze back, lower slowly.', 'BEGINNER', 1, 1)")
+            seed(db, "('Dumbbell Shoulder Press', 'SHOULDERS', 'STRENGTH', 'DUMBBELLS', 'Overhead press for shoulders and triceps.', 'Press dumbbells overhead from shoulders, avoid arching back, lower slowly.', 'INTERMEDIATE', 1, 1)")
+            seed(db, "('Dumbbell Curl', 'ARMS', 'STRENGTH', 'DUMBBELLS', 'Biceps isolation curl.', 'Elbows pinned at sides, curl weights up, squeeze, lower fully.', 'BEGINNER', 1, 1)")
+            seed(db, "('Dumbbell Triceps Extension', 'ARMS', 'STRENGTH', 'DUMBBELLS', 'Overhead triceps builder.', 'Weight behind head, extend arms overhead, keep elbows still, lower slowly.', 'INTERMEDIATE', 1, 1)")
+            seed(db, "('Goblet Squat', 'LEGS', 'STRENGTH', 'DUMBBELLS', 'Weighted squat holding one dumbbell at the chest.', 'Hold weight at chest, squat deep with upright torso, drive up.', 'INTERMEDIATE', 1, 1)")
+            seed(db, "('Dumbbell Romanian Deadlift', 'GLUTES', 'STRENGTH', 'DUMBBELLS', 'Hip-hinge for glutes and hamstrings.', 'Soft knees, push hips back lowering weights along thighs, stand tall.', 'INTERMEDIATE', 1, 1)")
+            seed(db, "('Dumbbell Chest Press', 'CHEST', 'STRENGTH', 'DUMBBELLS', 'Lying chest press, floor or bench.', 'On back, press dumbbells from chest to full extension, lower slowly.', 'BEGINNER', 1, 1)")
+            seed(db, "('Dumbbell Lateral Raise', 'SHOULDERS', 'STRENGTH', 'DUMBBELLS', 'Side-shoulder isolation.', 'Light weights, raise arms to shoulder height with soft elbows, lower slowly.', 'BEGINNER', 1, 1)")
+            seed(db, "('Barbell Overhead Press', 'SHOULDERS', 'STRENGTH', 'BARBELL', 'Standing barbell press for full upper body.', 'Brace core, press bar overhead to lockout, lower to chin level.', 'ADVANCED', 1, 1)")
+            seed(db, "('Pull-Up', 'BACK', 'BODYWEIGHT', 'PULL_UP_BAR', 'Classic upper-body pull from a bar.', 'Hang from bar, pull chest toward bar, lower fully with control.', 'ADVANCED', 1, 1)")
+            seed(db, "('Resistance Band Pull-Apart', 'SHOULDERS', 'STRENGTH', 'RESISTANCE_BANDS', 'Upper-back and rear-shoulder band drill.', 'Hold band at shoulder height, pull apart until chest, return slowly.', 'BEGINNER', 1, 1)")
         }
     }
 }

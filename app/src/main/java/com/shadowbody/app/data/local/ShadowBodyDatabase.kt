@@ -11,12 +11,25 @@ import androidx.room.TypeConverters
  *
  * - v1: [SchemaAnchor] foundation only.
  * - v2: + [UserProfile], + [BaselineRecord] (see [Migrations.MIGRATION_1_2]).
+ * - v3: + workout engine — [Exercise], [WorkoutPlan], [WorkoutPlanExercise],
+ *   [WorkoutSession], [SessionExercise], [SessionSet]
+ *   (see [Migrations.MIGRATION_2_3]).
  *
  * Every version bump ships an explicit Migration; destructive fallback is
  * never enabled. Schemas are exported to `app/schemas` and committed.
  */
 @Database(
-    entities = [SchemaAnchor::class, UserProfile::class, BaselineRecord::class],
+    entities = [
+        SchemaAnchor::class,
+        UserProfile::class,
+        BaselineRecord::class,
+        Exercise::class,
+        WorkoutPlan::class,
+        WorkoutPlanExercise::class,
+        WorkoutSession::class,
+        SessionExercise::class,
+        SessionSet::class,
+    ],
     version = ShadowBodyDatabase.VERSION,
     exportSchema = true,
 )
@@ -26,9 +39,13 @@ abstract class ShadowBodyDatabase : RoomDatabase() {
     abstract fun schemaAnchorDao(): SchemaAnchorDao
     abstract fun userProfileDao(): UserProfileDao
     abstract fun baselineRecordDao(): BaselineRecordDao
+    abstract fun exerciseDao(): ExerciseDao
+    abstract fun planDao(): PlanDao
+    abstract fun planExerciseDao(): PlanExerciseDao
+    abstract fun sessionDao(): SessionDao
 
     companion object {
-        const val VERSION = 2
+        const val VERSION = 3
         const val NAME = "shadow_body.db"
 
         @Volatile
@@ -41,7 +58,7 @@ abstract class ShadowBodyDatabase : RoomDatabase() {
                     ShadowBodyDatabase::class.java,
                     NAME,
                 )
-                    .addMigrations(Migrations.MIGRATION_1_2)
+                    .addMigrations(Migrations.MIGRATION_1_2, Migrations.MIGRATION_2_3)
                     .build().also { instance = it }
             }
 
