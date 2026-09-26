@@ -1,5 +1,6 @@
 package com.shadowbody.app.ui.dashboard
 
+import androidx.compose.foundation.clickable
 import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Column
 import androidx.compose.foundation.layout.Row
@@ -46,6 +47,7 @@ import com.shadowbody.app.ui.theme.LocalShadowSpacing
 @Composable
 fun DashboardScreen(
     onOpenSettings: () -> Unit,
+    onOpenProfile: () -> Unit,
     viewModel: DashboardViewModel = viewModel(),
 ) {
     val state by viewModel.uiState.collectAsState()
@@ -112,6 +114,41 @@ fun DashboardScreen(
             }
 
             item {
+                // Profile status: honest empty state vs configured summary.
+                if (state.profileConfigured) {
+                    SystemPanel {
+                        Text(
+                            text = "[ PROFILE ONLINE ]",
+                            style = MaterialTheme.typography.titleSmall,
+                            color = MaterialTheme.colorScheme.tertiary,
+                            modifier = Modifier.testTag("profileStatusOnline"),
+                        )
+                        Spacer(modifier = Modifier.height(spacing.xs))
+                        Text(
+                            text = "Record sealed. Training phases will build on it.",
+                            style = MaterialTheme.typography.bodySmall,
+                            color = MaterialTheme.colorScheme.onSurfaceVariant,
+                        )
+                    }
+                } else {
+                    SystemPanel(accentBorder = true) {
+                        Text(
+                            text = "[ PROFILE NOT CONFIGURED ]",
+                            style = MaterialTheme.typography.titleSmall,
+                            color = MaterialTheme.colorScheme.primary,
+                            modifier = Modifier.testTag("profileStatusMissing"),
+                        )
+                        Spacer(modifier = Modifier.height(spacing.xs))
+                        Text(
+                            text = "Initialize your record to begin.",
+                            style = MaterialTheme.typography.bodySmall,
+                            color = MaterialTheme.colorScheme.onSurfaceVariant,
+                        )
+                    }
+                }
+            }
+
+            item {
                 Row(
                     modifier = Modifier.fillMaxWidth(),
                     horizontalArrangement = Arrangement.spacedBy(spacing.sm),
@@ -144,7 +181,17 @@ fun DashboardScreen(
             }
 
             items(state.modules, key = { it.id }) { module ->
-                ModuleRow(module = module)
+                // Phase 2: the profile module is live; the rest stay sealed.
+                if (module.id == "profile") {
+                    ModuleRow(
+                        module = module,
+                        statusOverride = if (state.profileConfigured) "OPEN" else "CREATE",
+                        statusAvailable = true,
+                        onClick = onOpenProfile,
+                    )
+                } else {
+                    ModuleRow(module = module)
+                }
             }
 
             item { Spacer(modifier = Modifier.height(spacing.md)) }
@@ -153,11 +200,19 @@ fun DashboardScreen(
 }
 
 @Composable
-private fun ModuleRow(module: SystemModule) {
+private fun ModuleRow(
+    module: SystemModule,
+    statusOverride: String? = null,
+    statusAvailable: Boolean = false,
+    onClick: (() -> Unit)? = null,
+) {
     val spacing = LocalShadowSpacing.current
     SystemPanel {
         Row(
-            modifier = Modifier.fillMaxWidth(),
+            modifier = Modifier
+                .fillMaxWidth()
+                .clickable(enabled = onClick != null, onClick = { onClick?.invoke() })
+                .testTag("module:${module.id}"),
             verticalAlignment = Alignment.CenterVertically,
             horizontalArrangement = Arrangement.SpaceBetween,
         ) {
@@ -177,10 +232,12 @@ private fun ModuleRow(module: SystemModule) {
                 verticalAlignment = Alignment.CenterVertically,
                 horizontalArrangement = Arrangement.spacedBy(4.dp),
             ) {
+                val isOpen = statusAvailable || module.state == ModuleState.AVAILABLE
                 Text(
-                    text = if (module.state == ModuleState.AVAILABLE) "OPEN" else "SEALED",
+                    text = statusOverride
+                        ?: if (module.state == ModuleState.AVAILABLE) "OPEN" else "SEALED",
                     style = MaterialTheme.typography.labelSmall,
-                    color = if (module.state == ModuleState.AVAILABLE) {
+                    color = if (isOpen) {
                         MaterialTheme.colorScheme.tertiary
                     } else {
                         MaterialTheme.colorScheme.onSurfaceVariant

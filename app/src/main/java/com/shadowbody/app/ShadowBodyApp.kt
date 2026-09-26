@@ -3,6 +3,8 @@ package com.shadowbody.app
 import android.app.Application
 import com.shadowbody.app.data.local.ShadowBodyDatabase
 import com.shadowbody.app.data.preferences.AppPreferences
+import com.shadowbody.app.data.repository.BaselineRepository
+import com.shadowbody.app.data.repository.ProfileRepository
 
 /**
  * Phase 1 application entry point.
@@ -19,5 +21,13 @@ class ShadowBodyApp : Application() {
 
     val preferences: AppPreferences by lazy {
         AppPreferences(this)
+    }
+
+    val profileRepository: ProfileRepository by lazy {
+        ProfileRepository(database.userProfileDao())
+    }
+
+    val baselineRepository: BaselineRepository by lazy {
+        BaselineRepository(database.baselineRecordDao())
     }
 }

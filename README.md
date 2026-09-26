@@ -5,8 +5,8 @@ fitness, adaptive training, morning activation, nutrition, hydration,
 progression, grooming, wardrobe, body tracking, and local-first coaching —
 presented as a personal physical-development operating system.
 
-**Current phase: Phase 1 — Android Foundation** (functional dashboard,
-settings, navigation, Room + DataStore foundations; no feature modules yet).
+**Current phase: Phase 2 — User Profile + Body Baseline** (profile create/edit,
+baseline records + history, Room v2 with explicit migration).
 
 ## UI direction
 
@@ -51,7 +51,7 @@ app/src/main/java/com/shadowbody/app/
 | minSdk | 26 | |
 | applicationId | `com.shadowbody.app` | version `0.1.0-phase1` |
 | Compose BOM | 2024.09.00 | Material3, Navigation 2.7.7 |
-| Room | 2.6.1 | DB v1, KSP |
+| Room | 2.6.1 | DB v2, KSP, explicit MIGRATION_1_2 |
 | DataStore | 1.1.1 | Preferences |
 | Robolectric | 4.13 | local JVM tests for Room/DataStore |
 
@@ -84,19 +84,25 @@ injuries, deficiencies, or hormonal status; does not prescribe medication;
 and does not claim medical certainty. Recommendations are assistance, not
 medical authority — consult a qualified professional where appropriate.
 
-## Testing status (Phase 1)
+## Testing status (Phase 2)
 
-- Local unit tests: **12/12 pass** (routes, dashboard contract, Room
-  round-trip, DataStore persistence).
-- Instrumented smoke tests: **2/2 pass** on emulator `CE_Test`
-  (dashboard launch, settings navigation).
+- Local unit tests: **42/42 pass** — routes (3), dashboard contract (4),
+  dashboard profile state (1), Room incl. anchor round-trip (3), DataStore (2),
+  repositories incl. reopen persistence (4), converters (6), profile
+  validation (11), baseline validation (8).
+- Instrumented tests: **4/4 pass** on emulator `CE_Test` — dashboard launch,
+  settings navigation, migration v1→v2 (anchor preserved, new tables work),
+  full profile+baseline UI flow (create → persist → baseline → history →
+  edit → activity restart still persisted).
+- Total: **46/46, 0 failures, 0 errors**.
 - `Medium_Phone_API_36.1` AVD is unusable: its system image download is
   missing `system.img` (pre-existing environment issue, unrelated to the app).
 
 ## Roadmap
 
 - [x] Phase 0 — Environment + read-only audit
-- [x] Phase 1 — Android Foundation (this build)
+- [x] Phase 1 — Android Foundation
+- [x] Phase 2 — User Profile + Body Baseline (this build)
 - [ ] Phase 2 — User Profile + Body Baseline
 - [ ] Phase 3 — Workout Engine
 - [ ] Phase 4 — Adaptive Workouts
@@ -114,7 +120,23 @@ medical authority — consult a qualified professional where appropriate.
 - ~3–5 months if advanced AI, camera analysis, extensive real-device testing,
   optimization, polishing, and iteration are included.
 
-## Known limitations (Phase 1)
+## Phase 2 architecture
+
+- `data/local/`: `UserProfile` (single row, id=1: age, height, weight,
+  fitness level, equipment/goal/day sets, session minutes),
+  `BaselineRecord` (timestamped snapshots, all measurements optional),
+  `Converters` (CSV sets, unknown tokens dropped), DAOs, `Migrations`.
+- `domain/validation/`: `ProfileValidator` (age 10–100, height 100–250 cm,
+  weight 25–350 kg, NONE-exclusive equipment, required picks) and
+  `BaselineValidator` (girths 20–250 cm, body fat 1–70%, ≥1 measurement).
+- `data/repository/`: `ProfileRepository`, `BaselineRepository` (Flow).
+- UI: `ProfileScreen` (empty state honest), `ProfileEditScreen` (chips +
+  numeric fields), `BaselineHistoryScreen` (+ input dialog). Dashboard shows
+  PROFILE NOT CONFIGURED vs ONLINE and opens the profile flow.
+- Room v2: explicit `MIGRATION_1_2` creates both tables; anchor row verified
+  intact post-migration. No destructive fallback, ever.
+
+## Known limitations (Phase 2)
 
 - Dashboard stats are honest placeholders; modules show SEALED until their phase.
 - `org.gradle.java.home` in `gradle.properties` covers Gradle daemons, but the

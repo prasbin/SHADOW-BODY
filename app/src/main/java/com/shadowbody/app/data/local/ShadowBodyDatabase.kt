@@ -4,28 +4,31 @@ import android.content.Context
 import androidx.room.Database
 import androidx.room.Room
 import androidx.room.RoomDatabase
+import androidx.room.TypeConverters
 
 /**
- * Phase 1 Room foundation.
+ * SHADOW BODY database.
  *
- * - Version starts at 1, anchored by the [SchemaAnchor] entity.
- * - Each later phase adds its entities + an **explicit** Migration object;
- *   [fallbackToDestructiveMigration] is deliberately NOT used so user data
- *   can never be silently wiped by a schema upgrade.
- * - Schemas are exported to `app/schemas` and committed to Git so
- *   migrations are verifiable and reviewable.
+ * - v1: [SchemaAnchor] foundation only.
+ * - v2: + [UserProfile], + [BaselineRecord] (see [Migrations.MIGRATION_1_2]).
+ *
+ * Every version bump ships an explicit Migration; destructive fallback is
+ * never enabled. Schemas are exported to `app/schemas` and committed.
  */
 @Database(
-    entities = [SchemaAnchor::class],
+    entities = [SchemaAnchor::class, UserProfile::class, BaselineRecord::class],
     version = ShadowBodyDatabase.VERSION,
     exportSchema = true,
 )
+@TypeConverters(Converters::class)
 abstract class ShadowBodyDatabase : RoomDatabase() {
 
     abstract fun schemaAnchorDao(): SchemaAnchorDao
+    abstract fun userProfileDao(): UserProfileDao
+    abstract fun baselineRecordDao(): BaselineRecordDao
 
     companion object {
-        const val VERSION = 1
+        const val VERSION = 2
         const val NAME = "shadow_body.db"
 
         @Volatile
@@ -37,7 +40,9 @@ abstract class ShadowBodyDatabase : RoomDatabase() {
                     context.applicationContext,
                     ShadowBodyDatabase::class.java,
                     NAME,
-                ).build().also { instance = it }
+                )
+                    .addMigrations(Migrations.MIGRATION_1_2)
+                    .build().also { instance = it }
             }
 
         /** Test helper: in-memory database, never persisted. */
