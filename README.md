@@ -5,8 +5,9 @@ fitness, adaptive training, morning activation, nutrition, hydration,
 progression, grooming, wardrobe, body tracking, and local-first coaching —
 presented as a personal physical-development operating system.
 
-**Current phase: Phase 2 — User Profile + Body Baseline** (profile create/edit,
-baseline records + history, Room v2 with explicit migration).
+**Current phase: Phase 4 — Adaptive Workouts** (readiness check-ins, deterministic
+local progression/regression, explainable recommendations with per-target
+reasons, adopt-as-plan, Room v4 with explicit migration).
 
 ## UI direction
 
@@ -28,12 +29,14 @@ app/src/main/java/com/shadowbody/app/
 ├── ui/dashboard/              # DashboardScreen + DashboardViewModel
 ├── ui/settings/               # SettingsScreen + SettingsViewModel
 ├── ui/workout/                # Training hall, plan editor/detail, active session, result
+├── ui/adaptive/               # AdaptiveViewModel + AdaptiveScreen
 ├── domain/model/              # SystemModule / ModuleState (pure Kotlin)
-├── domain/validation/         # ProfileValidator, BaselineValidator, WorkoutValidator
+├── domain/validation/         # ProfileValidator, BaselineValidator, WorkoutValidator, AdaptiveValidator
+├── domain/adaptive/           # WorkoutAdaptationEngine, WorkoutGenerator, AdaptationLimits, reasons
 ├── domain/workout/            # RestTimer (lifecycle-aware rest clock)
 └── data/
-    ├── local/                 # ShadowBodyDatabase (v3), entities, DAOs, Migrations
-    ├── repository/            # Profile, Baseline, Exercise, Plan, Session
+    ├── local/                 # ShadowBodyDatabase (v4), entities, DAOs, Migrations
+    ├── repository/            # Profile, Baseline, Exercise, Plan, Session, Readiness, Adaptation, Recommendation
     └── preferences/           # AppPreferences (DataStore wrapper)
 ```
 
@@ -55,7 +58,7 @@ app/src/main/java/com/shadowbody/app/
 | minSdk | 26 | |
 | applicationId | `com.shadowbody.app` | version `0.1.0-phase1` |
 | Compose BOM | 2024.09.00 | Material3, Navigation 2.7.7 |
-| Room | 2.6.1 | DB v3, KSP, explicit MIGRATION_1_2 + MIGRATION_2_3 |
+| Room | 2.6.1 | DB v4, KSP, explicit MIGRATION_1_2 + 2_3 + 3_4 |
 | DataStore | 1.1.1 | Preferences |
 | Robolectric | 4.13 | local JVM tests for Room/DataStore |
 
@@ -88,21 +91,23 @@ injuries, deficiencies, or hormonal status; does not prescribe medication;
 and does not claim medical certainty. Recommendations are assistance, not
 medical authority — consult a qualified professional where appropriate.
 
-## Testing status (Phase 3)
+## Testing status (Phase 4)
 
-- Local unit tests: **66/66 pass** — routes (3), dashboard contract (4),
-  dashboard profile state (1), Room incl. anchor round-trip (3), DataStore (2),
-  repositories incl. reopen persistence (4), converters (6), profile
-  validation (11), baseline validation (8), exercise seeds (3), session detail
-  (2), workout repository/Room (6), workout validation (8), rest timer (5).
-- Instrumented tests: **6/6 pass** on emulator `CE_Test` — dashboard launch,
-  settings navigation, full profile+baseline UI flow, migration v1→v2
-  (anchor preserved, new tables work), migration v2→v3 (profile + baseline rows
-  survive, 28 exercises seeded), and the full workout UI flow (forge plan with
-  two exercises → reorder targets → start session → log a set → rest timer
-  start/pause/resume/reset → complete → real result totals → history entry →
-  activity restart still persisted).
-- Total: **72/72, 0 failures, 0 errors**.
+- Local unit tests: **139/139 pass** — routes (3), dashboard contract (4),
+  dashboard profile state (1), Room incl. anchor round-trip (3), Phase 4
+  relational contract (7), DataStore (2), repositories incl. reopen
+  persistence (4), adaptation repository (12), workout repository/Room (6),
+  converters (6), profile validation (11), baseline validation (8), workout
+  validation (8), adaptive readiness validation (7), adaptation engine (24),
+  workout generator (23), exercise seeds (3), session detail (2), rest timer (5).
+- Instrumented tests: **12/12 pass** on emulator `CE_Test` — dashboard launch,
+  settings navigation, full profile+baseline UI flow, full workout UI flow
+  (forge plan → start → log a set → rest timer → complete → result → history →
+  restart persists), the Phase 4 adaptive UI flow (readiness validation and
+  persistence, generation with per-target reasons, adopt → real plan, skip →
+  history untouched), and migrations v1→v2, v2→v3, v3→v4 (Phase 3 rows
+  preserved, new tables created, constraints enforced, reopen is idempotent).
+- Total: **151/151, 0 failures, 0 errors**.
 - `Medium_Phone_API_36.1` AVD is unusable: its system image download is
   missing `system.img` (pre-existing environment issue, unrelated to the app).
 - Host RAM is tight (16 GB): the emulator must be stopped before Kotlin
@@ -114,8 +119,8 @@ medical authority — consult a qualified professional where appropriate.
 - [x] Phase 0 — Environment + read-only audit
 - [x] Phase 1 — Android Foundation
 - [x] Phase 2 — User Profile + Body Baseline
-- [x] Phase 3 — Workout Engine (this build)
-- [ ] Phase 4 — Adaptive Workouts
+- [x] Phase 3 — Workout Engine
+- [x] Phase 4 — Adaptive Workouts (this build)
 - [ ] Phase 5 — Morning Activation
 - [ ] Phase 6 — Nutrition MVP
 - [ ] Phase 7 — Progression System MVP
@@ -175,10 +180,60 @@ medical authority — consult a qualified professional where appropriate.
   exercise library while preserving v2 profile/baseline data. No destructive
   fallback, ever.
 
-## Known limitations (Phase 3)
+## Phase 4 architecture
 
-- Dashboard stats are honest placeholders; later modules show SEALED until their
-  phase, and the workout module shows real counts only.
+- `data/local/`: `ReadinessReport` (append-only self check-in: fatigue 1–5,
+  soreness 1–5, optional note), `ExerciseAdaptation` (per-exercise current
+  target, progression state, last reason code + text), `AdaptationCheckpoint`
+  (single row, the last applied completed session), `WorkoutRecommendation`
+  (generated session header + status) and `RecommendedExercise` (frozen target
+  and reason snapshot). History is protected: recommendations and misses
+  `SET NULL` when their plan is deleted, `recommended_exercise` cascades with its
+  recommendation, and `exercise_adaptation` is `RESTRICT`ed so a tracked
+  exercise cannot vanish. `(exerciseId)` and `(recommendationId, position)` are
+  unique, so tracking and ordering are deterministic.
+- `domain/adaptive/WorkoutAdaptationEngine`: pure, deterministic, explainable.
+  Progresses only after `SESSIONS_TO_PROGRESS = 2` clean sessions, regresses on
+  completion ratio < 0.6 or rep ratio < 0.7, and never exceeds the safety
+  envelope in `AdaptationLimits` (sets 1–6, reps 5–30 in steps of 2, duration
+  15–600 s in 30 s steps, rest 30–180 s). Every decision carries a stable
+  `AdaptationReason` code and a sentence the user can read.
+- `domain/adaptive/WorkoutGenerator`: picks the plan, filters the library by
+  profile equipment, applies adaptation state, plans rotation, and a weekly
+  target, then trims to the requested session minutes (reps estimated at
+  4 s/rep plus 30 s per exercise) with a hard 6-exercise cap. If no profile
+  exists it falls back to the bodyweight library rather than inventing data.
+- `AdaptationRepository`: folds completed sessions into adaptation state exactly
+  once. Sessions are processed in order after the checkpoint, readiness is read
+  at or before the session's end, and the session's own target snapshot is the
+  source of truth — so a manual plan edit resets the streak instead of being
+  overwritten by stale targets. The checkpoint is advanced with a
+  compare-and-set, so re-running is idempotent. Completed sessions are read,
+  never rewritten.
+- `RecommendationRepository` + `AdaptiveWorkoutPlanner`: generation, adopt
+  (snapshot → real `WorkoutPlan`), skip (explicit `MissedWorkout`), dismiss.
+  A recommendation is immutable: later history never rewrites what the user was
+  told to do.
+- `domain/validation/AdaptiveValidator`: readiness ranges and note length, with
+  per-field errors rendered under the offending control.
+- UI: `AdaptiveScreen` (readiness check-in, generate, per-target explanation,
+  adopt / skip / dismiss, back to dashboard) and `AdaptiveViewModel`; the
+  dashboard module opens it and the ADAPTIVE module is unlocked.
+- Room v4: explicit additive `MIGRATION_3_4` creates the five adaptive tables
+  and preserves every Phase 3 row. No destructive fallback, ever.
+
+## Known limitations (Phase 4)
+
+- Adaptation is rep-based and schedule-based only. It reads completed-session
+  reps, completion and the user's own readiness ratings; it does not infer
+  anything from time under tension, RPE or biometrics, because the app does not
+  collect them.
+- A "missed workout" is only what the user explicitly marks as skipped. The app
+  never decides on its own that a session was missed.
+- Generated workouts come from the seeded bodyweight/gym library and the user's
+  own plans. There is no exercise creation or editing yet.
+- Dashboard stats are honest placeholders; modules still show SEALED until their
+  phase, and the workout/adaptive modules show real counts only.
 - Rest timing is manual: the rest panel offers 30/60/90 s presets and +30 s
   rather than auto-starting each exercise's configured rest value.
 - The exercise browser is a searchable picker inside the plan editor; there is

@@ -49,6 +49,7 @@ fun DashboardScreen(
     onOpenSettings: () -> Unit,
     onOpenProfile: () -> Unit,
     onOpenWorkout: () -> Unit,
+    onOpenAdaptive: () -> Unit = {},
     viewModel: DashboardViewModel = viewModel(),
 ) {
     val state by viewModel.uiState.collectAsState()
@@ -85,7 +86,8 @@ fun DashboardScreen(
             modifier = Modifier
                 .fillMaxSize()
                 .padding(padding)
-                .padding(horizontal = spacing.md),
+                .padding(horizontal = spacing.md)
+                .testTag("dashboardList"),
             verticalArrangement = Arrangement.spacedBy(spacing.sm),
         ) {
             item {
@@ -197,6 +199,14 @@ fun DashboardScreen(
                         statusOverride = "OPEN",
                         statusAvailable = true,
                         onClick = onOpenWorkout,
+                    )
+                } else if (module.id == "adaptive") {
+                    // Phase 4: adaptive training is live and reachable.
+                    ModuleRow(
+                        module = module,
+                        statusOverride = "OPEN",
+                        statusAvailable = true,
+                        onClick = onOpenAdaptive,
                     )
                 } else {
                     ModuleRow(module = module)

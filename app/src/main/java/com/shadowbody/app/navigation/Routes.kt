@@ -12,11 +12,13 @@ object Routes {
     const val PLAN_EDITOR = "plan_editor?planId={planId}"
     const val ACTIVE_WORKOUT = "active/{sessionId}"
     const val WORKOUT_RESULT = "result/{sessionId}"
+    const val ADAPTIVE = "adaptive"
 
     /** Every route registered in the NavHost. Used by tests to catch typos. */
     val all: List<String> = listOf(
         DASHBOARD, SETTINGS, PROFILE, PROFILE_EDIT, BASELINE_HISTORY,
         WORKOUT, PLAN_DETAIL, PLAN_EDITOR, ACTIVE_WORKOUT, WORKOUT_RESULT,
+        ADAPTIVE,
     )
 
     const val START = DASHBOARD

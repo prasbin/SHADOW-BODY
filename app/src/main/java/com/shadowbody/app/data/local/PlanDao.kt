@@ -12,6 +12,9 @@ interface PlanDao {
     @Query("SELECT * FROM workout_plan WHERE isActive = 1 ORDER BY updatedAt DESC")
     fun observePlans(): Flow<List<WorkoutPlan>>
 
+    @Query("SELECT * FROM workout_plan WHERE isActive = 1 ORDER BY id")
+    suspend fun getActivePlans(): List<WorkoutPlan>
+
     @Query("SELECT * FROM workout_plan WHERE id = :id")
     suspend fun getById(id: Long): WorkoutPlan?
 

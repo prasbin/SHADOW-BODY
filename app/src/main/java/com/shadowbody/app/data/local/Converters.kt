@@ -7,6 +7,8 @@ import com.shadowbody.app.domain.model.ExerciseCategory
 import com.shadowbody.app.domain.model.FitnessLevel
 import com.shadowbody.app.domain.model.Goal
 import com.shadowbody.app.domain.model.MuscleGroup
+import com.shadowbody.app.domain.model.ProgressionState
+import com.shadowbody.app.domain.model.RecommendationStatus
 import com.shadowbody.app.domain.model.SessionStatus
 
 /** CSV-based converters. Unknown tokens are dropped, never crash reads. */
@@ -83,4 +85,20 @@ class Converters {
     @TypeConverter
     fun stringToSessionStatus(raw: String): SessionStatus =
         runCatching { SessionStatus.valueOf(raw) }.getOrDefault(SessionStatus.IN_PROGRESS)
+
+    // --- Adaptive engine enums (Phase 4). Same unknown-token policy. ---
+
+    @TypeConverter
+    fun progressionStateToString(value: ProgressionState): String = value.name
+
+    @TypeConverter
+    fun stringToProgressionState(raw: String): ProgressionState =
+        runCatching { ProgressionState.valueOf(raw) }.getOrDefault(ProgressionState.UNTRACKED)
+
+    @TypeConverter
+    fun recommendationStatusToString(value: RecommendationStatus): String = value.name
+
+    @TypeConverter
+    fun stringToRecommendationStatus(raw: String): RecommendationStatus =
+        runCatching { RecommendationStatus.valueOf(raw) }.getOrDefault(RecommendationStatus.ACTIVE)
 }

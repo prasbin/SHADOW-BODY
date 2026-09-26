@@ -12,6 +12,9 @@ interface ExerciseDao {
     @Query("SELECT * FROM exercise WHERE isActive = 1 ORDER BY name")
     fun observeActive(): Flow<List<Exercise>>
 
+    @Query("SELECT * FROM exercise WHERE isActive = 1 ORDER BY name")
+    suspend fun getActive(): List<Exercise>
+
     @Query(
         "SELECT * FROM exercise WHERE isActive = 1 AND " +
             "(name LIKE '%' || :query || '%' OR muscleGroup = :muscle) ORDER BY name",

@@ -28,6 +28,8 @@ import androidx.navigation.compose.composable
 import androidx.navigation.compose.rememberNavController
 import androidx.navigation.navArgument
 import com.shadowbody.app.ShadowBodyApp
+import com.shadowbody.app.ui.adaptive.AdaptiveScreen
+import com.shadowbody.app.ui.adaptive.AdaptiveViewModel
 import com.shadowbody.app.ui.baseline.BaselineHistoryScreen
 import com.shadowbody.app.ui.baseline.BaselineViewModel
 import com.shadowbody.app.ui.dashboard.DashboardScreen
@@ -71,6 +73,7 @@ fun ShadowBodyNavHost() {
                 onOpenSettings = { navController.navigate(Routes.SETTINGS) },
                 onOpenProfile = { navController.navigate(Routes.PROFILE) },
                 onOpenWorkout = { navController.navigate(Routes.WORKOUT) },
+                onOpenAdaptive = { navController.navigate(Routes.ADAPTIVE) },
             )
         }
         composable(Routes.SETTINGS) {
@@ -249,6 +252,13 @@ fun ShadowBodyNavHost() {
                 onDone = {
                     navController.popBackStack(Routes.WORKOUT, inclusive = false)
                 },
+                onBack = { navController.popBackStack() },
+            )
+        }
+        composable(Routes.ADAPTIVE) {
+            val vm: AdaptiveViewModel = viewModel(factory = AdaptiveViewModel.Factory(app))
+            AdaptiveScreen(
+                viewModel = vm,
                 onBack = { navController.popBackStack() },
             )
         }

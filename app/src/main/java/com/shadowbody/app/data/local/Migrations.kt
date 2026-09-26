@@ -196,4 +196,128 @@ object Migrations {
             seed(db, "('Resistance Band Pull-Apart', 'SHOULDERS', 'STRENGTH', 'RESISTANCE_BANDS', 'Upper-back and rear-shoulder band drill.', 'Hold band at shoulder height, pull apart until chest, return slowly.', 'BEGINNER', 1, 1)")
         }
     }
+
+    /**
+     * v3 -> v4: adds the Phase 4 adaptive tables.
+     *
+     * Purely additive: no existing table, column or row is touched, so
+     * profiles, baselines, the exercise library, plans, plan slots and every
+     * completed session survive untouched. Adaptation state starts empty on
+     * purpose — an upgrade must never invent progress the user did not earn.
+     */
+    val MIGRATION_3_4 = object : Migration(3, 4) {
+        override fun migrate(db: SupportSQLiteDatabase) {
+            db.execSQL(
+                "CREATE TABLE IF NOT EXISTS `readiness_report` (" +
+                    "`id` INTEGER PRIMARY KEY AUTOINCREMENT NOT NULL, " +
+                    "`recordedAt` INTEGER NOT NULL, " +
+                    "`fatigue` INTEGER NOT NULL, " +
+                    "`soreness` INTEGER NOT NULL, " +
+                    "`notes` TEXT NOT NULL)",
+            )
+            db.execSQL(
+                "CREATE INDEX IF NOT EXISTS `index_readiness_report_recordedAt` " +
+                    "ON `readiness_report` (`recordedAt`)",
+            )
+            db.execSQL(
+                "CREATE TABLE IF NOT EXISTS `exercise_adaptation` (" +
+                    "`id` INTEGER PRIMARY KEY AUTOINCREMENT NOT NULL, " +
+                    "`exerciseId` INTEGER NOT NULL, " +
+                    "`currentSets` INTEGER NOT NULL, " +
+                    "`currentReps` INTEGER, " +
+                    "`currentDurationSec` INTEGER, " +
+                    "`restSec` INTEGER NOT NULL, " +
+                    "`state` TEXT NOT NULL, " +
+                    "`sessionsAtTarget` INTEGER NOT NULL, " +
+                    "`lastCompletedSets` INTEGER, " +
+                    "`lastTargetSets` INTEGER, " +
+                    "`lastActualReps` INTEGER, " +
+                    "`lastTargetReps` INTEGER, " +
+                    "`lastActualDurationSec` INTEGER, " +
+                    "`lastTargetDurationSec` INTEGER, " +
+                    "`lastReasonCode` TEXT NOT NULL, " +
+                    "`lastReasonText` TEXT NOT NULL, " +
+                    "`lastAdjustmentAt` INTEGER NOT NULL, " +
+                    "`updatedAt` INTEGER NOT NULL, " +
+                    "FOREIGN KEY(`exerciseId`) REFERENCES `exercise`(`id`) " +
+                    "ON UPDATE NO ACTION ON DELETE RESTRICT)",
+            )
+            db.execSQL(
+                "CREATE UNIQUE INDEX IF NOT EXISTS `index_exercise_adaptation_exerciseId` " +
+                    "ON `exercise_adaptation` (`exerciseId`)",
+            )
+            db.execSQL(
+                "CREATE TABLE IF NOT EXISTS `missed_workout` (" +
+                    "`id` INTEGER PRIMARY KEY AUTOINCREMENT NOT NULL, " +
+                    "`planId` INTEGER, " +
+                    "`recordedAt` INTEGER NOT NULL, " +
+                    "`reason` TEXT NOT NULL, " +
+                    "FOREIGN KEY(`planId`) REFERENCES `workout_plan`(`id`) " +
+                    "ON UPDATE NO ACTION ON DELETE SET NULL)",
+            )
+            db.execSQL(
+                "CREATE INDEX IF NOT EXISTS `index_missed_workout_recordedAt` " +
+                    "ON `missed_workout` (`recordedAt`)",
+            )
+            db.execSQL(
+                "CREATE TABLE IF NOT EXISTS `workout_recommendation` (" +
+                    "`id` INTEGER PRIMARY KEY AUTOINCREMENT NOT NULL, " +
+                    "`createdAt` INTEGER NOT NULL, " +
+                    "`planId` INTEGER, " +
+                    "`adoptedPlanId` INTEGER, " +
+                    "`readinessReportId` INTEGER, " +
+                    "`missedWorkoutId` INTEGER, " +
+                    "`name` TEXT NOT NULL, " +
+                    "`estimatedMinutes` INTEGER NOT NULL, " +
+                    "`summary` TEXT NOT NULL, " +
+                    "`status` TEXT NOT NULL, " +
+                    "FOREIGN KEY(`planId`) REFERENCES `workout_plan`(`id`) " +
+                    "ON UPDATE NO ACTION ON DELETE SET NULL, " +
+                    "FOREIGN KEY(`adoptedPlanId`) REFERENCES `workout_plan`(`id`) " +
+                    "ON UPDATE NO ACTION ON DELETE SET NULL, " +
+                    "FOREIGN KEY(`readinessReportId`) REFERENCES `readiness_report`(`id`) " +
+                    "ON UPDATE NO ACTION ON DELETE SET NULL, " +
+                    "FOREIGN KEY(`missedWorkoutId`) REFERENCES `missed_workout`(`id`) " +
+                    "ON UPDATE NO ACTION ON DELETE SET NULL)",
+            )
+            db.execSQL(
+                "CREATE INDEX IF NOT EXISTS `index_workout_recommendation_createdAt` " +
+                    "ON `workout_recommendation` (`createdAt`)",
+            )
+            db.execSQL(
+                "CREATE INDEX IF NOT EXISTS `index_workout_recommendation_status` " +
+                    "ON `workout_recommendation` (`status`)",
+            )
+            db.execSQL(
+                "CREATE TABLE IF NOT EXISTS `recommended_exercise` (" +
+                    "`id` INTEGER PRIMARY KEY AUTOINCREMENT NOT NULL, " +
+                    "`recommendationId` INTEGER NOT NULL, " +
+                    "`exerciseId` INTEGER NOT NULL, " +
+                    "`position` INTEGER NOT NULL, " +
+                    "`sets` INTEGER NOT NULL, " +
+                    "`reps` INTEGER, " +
+                    "`durationSec` INTEGER, " +
+                    "`restSec` INTEGER NOT NULL, " +
+                    "`reasonCode` TEXT NOT NULL, " +
+                    "`reasonText` TEXT NOT NULL, " +
+                    "FOREIGN KEY(`recommendationId`) " +
+                    "REFERENCES `workout_recommendation`(`id`) " +
+                    "ON UPDATE NO ACTION ON DELETE CASCADE, " +
+                    "FOREIGN KEY(`exerciseId`) REFERENCES `exercise`(`id`) " +
+                    "ON UPDATE NO ACTION ON DELETE RESTRICT)",
+            )
+            db.execSQL(
+                "CREATE UNIQUE INDEX IF NOT EXISTS " +
+                    "`index_recommended_exercise_recommendationId_position` " +
+                    "ON `recommended_exercise` (`recommendationId`, `position`)",
+            )
+            db.execSQL(
+                "CREATE TABLE IF NOT EXISTS `adaptation_checkpoint` (" +
+                    "`id` INTEGER NOT NULL, " +
+                    "`lastAppliedSessionId` INTEGER NOT NULL, " +
+                    "`updatedAt` INTEGER NOT NULL, " +
+                    "PRIMARY KEY(`id`))",
+            )
+        }
+    }
 }

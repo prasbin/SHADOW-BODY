@@ -84,7 +84,8 @@ fun WorkoutListScreen(
             modifier = Modifier
                 .fillMaxSize()
                 .padding(padding)
-                .padding(horizontal = spacing.md),
+                .padding(horizontal = spacing.md)
+                .testTag("hallList"),
             verticalArrangement = Arrangement.spacedBy(spacing.sm),
         ) {
             item {

@@ -14,6 +14,9 @@ import androidx.room.TypeConverters
  * - v3: + workout engine — [Exercise], [WorkoutPlan], [WorkoutPlanExercise],
  *   [WorkoutSession], [SessionExercise], [SessionSet]
  *   (see [Migrations.MIGRATION_2_3]).
+ * - v4: + adaptive workouts — [ReadinessReport], [ExerciseAdaptation],
+ *   [MissedWorkout], [WorkoutRecommendation], [RecommendedExercise],
+ *   [AdaptationCheckpoint] (see [Migrations.MIGRATION_3_4]).
  *
  * Every version bump ships an explicit Migration; destructive fallback is
  * never enabled. Schemas are exported to `app/schemas` and committed.
@@ -29,6 +32,12 @@ import androidx.room.TypeConverters
         WorkoutSession::class,
         SessionExercise::class,
         SessionSet::class,
+        ReadinessReport::class,
+        ExerciseAdaptation::class,
+        MissedWorkout::class,
+        WorkoutRecommendation::class,
+        RecommendedExercise::class,
+        AdaptationCheckpoint::class,
     ],
     version = ShadowBodyDatabase.VERSION,
     exportSchema = true,
@@ -43,9 +52,13 @@ abstract class ShadowBodyDatabase : RoomDatabase() {
     abstract fun planDao(): PlanDao
     abstract fun planExerciseDao(): PlanExerciseDao
     abstract fun sessionDao(): SessionDao
+    abstract fun readinessDao(): ReadinessDao
+    abstract fun adaptationDao(): AdaptationDao
+    abstract fun missedWorkoutDao(): MissedWorkoutDao
+    abstract fun recommendationDao(): RecommendationDao
 
     companion object {
-        const val VERSION = 3
+        const val VERSION = 4
         const val NAME = "shadow_body.db"
 
         @Volatile
@@ -58,7 +71,11 @@ abstract class ShadowBodyDatabase : RoomDatabase() {
                     ShadowBodyDatabase::class.java,
                     NAME,
                 )
-                    .addMigrations(Migrations.MIGRATION_1_2, Migrations.MIGRATION_2_3)
+                    .addMigrations(
+                        Migrations.MIGRATION_1_2,
+                        Migrations.MIGRATION_2_3,
+                        Migrations.MIGRATION_3_4,
+                    )
                     .build().also { instance = it }
             }
 

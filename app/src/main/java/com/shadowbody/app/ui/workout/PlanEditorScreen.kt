@@ -109,7 +109,8 @@ fun PlanEditorScreen(
             modifier = Modifier
                 .fillMaxSize()
                 .padding(padding)
-                .padding(horizontal = spacing.md),
+                .padding(horizontal = spacing.md)
+                .testTag("editorList"),
             verticalArrangement = Arrangement.spacedBy(spacing.sm),
         ) {
             item {

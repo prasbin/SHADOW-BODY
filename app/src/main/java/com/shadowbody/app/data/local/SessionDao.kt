@@ -75,6 +75,27 @@ abstract class SessionDao {
     @Query("SELECT * FROM workout_session WHERE id = :id")
     protected abstract suspend fun sessionById(id: Long): WorkoutSession?
 
+    // --- Phase 4: reads for the adaptive engine ---
+
+    /** Completed sessions after the adaptation checkpoint, oldest first. */
+    @Query("SELECT * FROM workout_session WHERE status = 'COMPLETED' AND id > :afterId ORDER BY id")
+    abstract suspend fun completedSessionsAfter(afterId: Long): List<WorkoutSession>
+
+    @Query("SELECT COUNT(*) FROM workout_session WHERE status = 'COMPLETED' AND endedAt >= :since")
+    abstract suspend fun completedCountSince(since: Long): Int
+
+    @Query(
+        "SELECT COUNT(*) FROM workout_session " +
+            "WHERE status = 'COMPLETED' AND planId = :planId",
+    )
+    abstract suspend fun completedCountForPlan(planId: Long): Int
+
+    @Query(
+        "SELECT MAX(endedAt) FROM workout_session " +
+            "WHERE status = 'COMPLETED' AND planId = :planId",
+    )
+    abstract suspend fun lastCompletedAtForPlan(planId: Long): Long?
+
     /** Single-session read for finish/abandon flows. */
     @Query("SELECT * FROM workout_session WHERE id = :id")
     abstract suspend fun getSession(id: Long): WorkoutSession?
