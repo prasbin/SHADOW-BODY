@@ -49,8 +49,9 @@ class ShadowBodyDatabaseTest {
     @Test
     fun `database version is pinned to the current schema`() {
         // Phase 1 shipped v1, Phase 2 bumped to v2, Phase 3 to v3, Phase 4
-        // (adaptive) to v4, Phase 5 (morning activation) to v5, Phase 6 (nutrition) to v6.
+        // (adaptive) to v4, Phase 5 (morning activation) to v5, Phase 6 (nutrition) to v6,
+        // Phase 7 (progression) to v7.
         // Pin the current value so accidental version changes break loudly.
-        assertEquals(6, ShadowBodyDatabase.VERSION)
+        assertEquals(7, ShadowBodyDatabase.VERSION)
     }
 }

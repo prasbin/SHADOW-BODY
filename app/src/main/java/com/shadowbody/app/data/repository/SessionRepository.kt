@@ -11,6 +11,7 @@ import kotlinx.coroutines.flow.Flow
 class SessionRepository(
     private val sessions: SessionDao,
     private val plans: PlanRepository,
+    private val progression: ProgressionRepository? = null,
 ) {
 
     fun recent(limit: Int = 20): Flow<List<WorkoutSession>> = sessions.observeRecent(limit)
@@ -54,6 +55,15 @@ class SessionRepository(
         sessions.updateSession(
             current.copy(status = SessionStatus.COMPLETED, endedAt = System.currentTimeMillis()),
         )
+        // Award XP for completed workout
+        progression?.awardXp(
+            source = com.shadowbody.app.domain.progression.XpSource.WORKOUT,
+            sourceRef = "workout:$sessionId",
+        )?.let { result ->
+            if (result is ProgressionRepository.AwardResult.Awarded) {
+                progression.processProgression()
+            }
+        }
     }
 
     suspend fun abandon(sessionId: Long) {

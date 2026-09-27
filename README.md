@@ -5,7 +5,7 @@ fitness, adaptive training, morning activation, nutrition, hydration,
 progression, grooming, wardrobe, body tracking, and local-first coaching —
 presented as a personal physical-development operating system.
 
-**Current phase: Phase 6 — Nutrition MVP** (food logging, hydration tracking, daily totals, goal configuration, Room v6 with explicit migration).
+**Current phase: Phase 7 — Progression System MVP** (XP, levels, attributes, streaks, achievements, Room v7 with explicit migration).
 
 ## UI direction
 
@@ -56,7 +56,7 @@ app/src/main/java/com/shadowbody/app/
 | minSdk | 26 | |
 | applicationId | `com.shadowbody.app` | version `0.1.0-phase1` |
 | Compose BOM | 2024.09.00 | Material3, Navigation 2.7.7 |
-| Room | 2.6.1 | DB v6, KSP, explicit MIGRATION_1_2 + 2_3 + 3_4 + 4_5 + 5_6 |
+| Room | 2.6.1 | DB v7, KSP, explicit MIGRATION_1_2 + 2_3 + 3_4 + 4_5 + 5_6 + 6_7 |
 | DataStore | 1.1.1 | Preferences |
 | Robolectric | 4.13 | local JVM tests for Room/DataStore |
 
@@ -89,11 +89,11 @@ injuries, deficiencies, or hormonal status; does not prescribe medication;
 and does not claim medical certainty. Recommendations are assistance, not
 medical authority — consult a qualified professional where appropriate.
 
-## Testing status (Phase 6)
+## Testing status (Phase 7)
 
-- Local unit tests: **237/237 pass** — routes, dashboard contract, Room, migrations, Phase 5 Morning Activation, Phase 6 Nutrition validation/calculations.
-- Instrumented tests: **Passing** — MorningFlowTest, Migration4To5Test, Migration5To6Test, NutritionFlowTest, and full UI flows.
-- Total: **237/237 unit tests, 0 failures, 0 errors**.
+- Local unit tests: **263/263 pass** — routes, dashboard contract, Room, migrations, Phase 5 Morning Activation, Phase 6 Nutrition, Phase 7 Progression engine/validation/repository/streaks/achievements.
+- Instrumented tests: **Passing** — MorningFlowTest, Migration4To5Test, Migration5To6Test, Migration6To7Test, NutritionFlowTest, ProgressionFlowTest, and full UI flows.
+- Total: **263/263 unit tests, 0 failures, 0 errors**.
 - `Medium_Phone_API_36.1` AVD is unusable: its system image download is
   missing `system.img` (pre-existing environment issue, unrelated to the app).
 - Host RAM is tight (16 GB): the emulator must be stopped before Kotlin
@@ -108,8 +108,8 @@ medical authority — consult a qualified professional where appropriate.
 - [x] Phase 3 — Workout Engine
 - [x] Phase 4 — Adaptive Workouts
 - [x] Phase 5 — Morning Activation
-- [x] Phase 6 — Nutrition MVP (this build)
-- [ ] Phase 7 — Progression System MVP
+- [x] Phase 6 — Nutrition MVP
+- [x] Phase 7 — Progression System MVP (this build)
 - [ ] Phase 8 — Grooming MVP
 - [ ] Phase 9 — Wardrobe + Outfit MVP
 - [ ] Phase 10 — AI Body Coach MVP (local-first, provider abstraction)
@@ -226,14 +226,25 @@ medical authority — consult a qualified professional where appropriate.
 - Dashboard integration: Phase 6 "Nutrition" module is OPEN with navigation to `NutritionScreen`.
 - Room v6: explicit additive `MIGRATION_5_6` creates the three nutrition tables. Preserves all Phase 1-5 data. No seeding — user configures their own goals.
 
-## Known limitations (Phase 6)
+## Phase 7 architecture
 
-- No barcode scanning, external food databases, or cloud AI — all entries are manual.
-- No macro distribution charts or trend graphs — only daily totals and history list.
-- No recipe/meal templates or quick-add presets — each entry is logged individually.
-- Hydration uses simple ml counter; no beverage types or electrolyte tracking.
-- Nutrition goals are static daily targets; no adaptive adjustment based on weight trend or activity.
-- Historical entries are read-only (no edit flow implemented).
+- `data/local/`: `XpTransaction` (immutable XP awards with source, sourceRef for idempotency, dayKey, timestamp), `Attribute` (Strength, Endurance, Discipline, Recovery, Nutrition — single row), `Streak` (current/longest streak, lastActiveDayKey), `Achievement` (definitions + unlock state). Unique index on `XpTransaction(source, sourceRef)` prevents duplicate awards.
+- `domain/progression/`: `ProgressionEngine` — pure deterministic logic for level (floor(totalXp/100)+1), attribute increments per source (WORKOUT→Str/End, MORNING→Disc/Rec, MEAL→Nut, HYD→Rec/Nut), streak calculation (calendar days, one per day max), achievement evaluation (7 built-in: First Step, Workout Initiate, Morning Awakened, Nutrition Logged, Hydration Habit, Week Warrior, XP 100).
+- `data/repository/ProgressionRepository`: XP award with duplicate protection via unique sourceRef, `processProgression()` recomputes attributes/streak/achievements from transaction log.
+- Integration: SessionRepository.finish() → +50 XP (WORKOUT), MorningActivationRepository.finish() → +30 XP (MORNING_ACTIVATION), NutritionRepository.addFood() → +10 XP (MEAL), NutritionRepository.addHydration() → +5 XP (HYDRATION).
+- UI: `ProgressionScreen` (dashboard module: level/XP progress bar, attribute cards, streak cards, achievement list with unlock state, recent XP transaction history), `ProgressionViewModel` (Flow-based summary, refresh trigger).
+- Dashboard integration: Phase 7 "Progression" module is OPEN with navigation to `ProgressionScreen`.
+- Room v7: explicit additive `MIGRATION_6_7` creates the four progression tables and seeds achievement definitions. Preserves all Phase 1-6 data.
+
+## Known limitations (Phase 7)
+
+- No social/competitive features — purely single-player progression.
+- No dynamic XP scaling — fixed rewards per activity type.
+- Achievements are predefined; no custom/user-created achievements.
+- Streak uses calendar day keys (ISO date) — assumes device timezone is consistent.
+- Attribute values are abstract game stats, not biomechanical measurements.
+- No prestige/rebirth system or level cap.
+- XP transaction history is read-only — no manual adjustment UI.
 - `org.gradle.java.home` in `gradle.properties` covers Gradle daemons, but the
   wrapper launcher still starts on the shell JDK — set `JAVA_HOME` to a
   JDK 17/21 for the build shell (see Build above).

@@ -44,16 +44,17 @@ import com.shadowbody.app.ui.theme.LocalShadowSpacing
  * placeholders are labelled as such.
  */
 @OptIn(ExperimentalMaterial3Api::class)
-    @Composable
-    fun DashboardScreen(
-        onOpenSettings: () -> Unit,
-        onOpenProfile: () -> Unit,
-        onOpenWorkout: () -> Unit,
-        onOpenAdaptive: () -> Unit = {},
-        onOpenActivation: () -> Unit = {},
-        onOpenNutrition: () -> Unit = {},
-        viewModel: DashboardViewModel = viewModel(),
-    ) {
+@Composable
+fun DashboardScreen(
+    onOpenSettings: () -> Unit,
+    onOpenProfile: () -> Unit,
+    onOpenWorkout: () -> Unit,
+    onOpenAdaptive: () -> Unit = {},
+    onOpenActivation: () -> Unit = {},
+    onOpenNutrition: () -> Unit = {},
+    onOpenProgression: () -> Unit = {},
+    viewModel: DashboardViewModel = viewModel(),
+) {
     val state by viewModel.uiState.collectAsState()
     val spacing = LocalShadowSpacing.current
 
@@ -225,6 +226,14 @@ import com.shadowbody.app.ui.theme.LocalShadowSpacing
                         statusOverride = "OPEN",
                         statusAvailable = true,
                         onClick = onOpenNutrition,
+                    )
+                } else if (module.id == "progression") {
+                    // Phase 7: progression is live and reachable.
+                    ModuleRow(
+                        module = module,
+                        statusOverride = "OPEN",
+                        statusAvailable = true,
+                        onClick = onOpenProgression,
                     )
                 } else {
                     ModuleRow(module = module)

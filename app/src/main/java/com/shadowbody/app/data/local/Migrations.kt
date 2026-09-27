@@ -493,6 +493,92 @@ object Migrations {
     }
 
     /**
+     * v6 -> v7: creates the Phase 7 progression tables (`xp_transaction`, `attribute`, `streak`, `achievement`).
+     * Purely additive: preserves all Phase 1-6 data.
+     * Achievements are initialized with default definitions; user progress starts at zero.
+     */
+    val MIGRATION_6_7 = object : Migration(6, 7) {
+        override fun migrate(db: SupportSQLiteDatabase) {
+            db.execSQL(
+                "CREATE TABLE IF NOT EXISTS `xp_transaction` (" +
+                    "`id` INTEGER PRIMARY KEY AUTOINCREMENT NOT NULL, " +
+                    "`xpAmount` INTEGER NOT NULL, " +
+                    "`source` TEXT NOT NULL, " +
+                    "`sourceRef` TEXT NOT NULL, " +
+                    "`dayKey` TEXT NOT NULL, " +
+                    "`reason` TEXT NOT NULL, " +
+                    "`loggedAt` INTEGER NOT NULL)",
+            )
+            db.execSQL(
+                "CREATE INDEX IF NOT EXISTS `index_xp_transaction_dayKey` ON `xp_transaction` (`dayKey`)",
+            )
+            db.execSQL(
+                "CREATE INDEX IF NOT EXISTS `index_xp_transaction_loggedAt` ON `xp_transaction` (`loggedAt`)",
+            )
+            db.execSQL(
+                "CREATE UNIQUE INDEX IF NOT EXISTS `index_xp_transaction_source_sourceRef` " +
+                    "ON `xp_transaction` (`source`, `sourceRef`)",
+            )
+
+            db.execSQL(
+                "CREATE TABLE IF NOT EXISTS `attribute` (" +
+                    "`id` INTEGER NOT NULL, " +
+                    "`strength` INTEGER NOT NULL DEFAULT 0, " +
+                    "`endurance` INTEGER NOT NULL DEFAULT 0, " +
+                    "`discipline` INTEGER NOT NULL DEFAULT 0, " +
+                    "`recovery` INTEGER NOT NULL DEFAULT 0, " +
+                    "`nutrition` INTEGER NOT NULL DEFAULT 0, " +
+                    "`updatedAt` INTEGER NOT NULL DEFAULT 0, " +
+                    "PRIMARY KEY(`id`))",
+            )
+
+            db.execSQL(
+                "CREATE TABLE IF NOT EXISTS `streak` (" +
+                    "`id` INTEGER NOT NULL, " +
+                    "`currentStreak` INTEGER NOT NULL DEFAULT 0, " +
+                    "`longestStreak` INTEGER NOT NULL DEFAULT 0, " +
+                    "`lastActiveDayKey` TEXT, " +
+                    "`updatedAt` INTEGER NOT NULL DEFAULT 0, " +
+                    "PRIMARY KEY(`id`))",
+            )
+
+            db.execSQL(
+                "CREATE TABLE IF NOT EXISTS `achievement` (" +
+                    "`id` TEXT NOT NULL, " +
+                    "`name` TEXT NOT NULL, " +
+                    "`description` TEXT NOT NULL, " +
+                    "`unlocked` INTEGER NOT NULL DEFAULT 0, " +
+                    "`unlockedAt` INTEGER, " +
+                    "`progressCurrent` INTEGER NOT NULL DEFAULT 0, " +
+                    "`progressTarget` INTEGER NOT NULL DEFAULT 1, " +
+                    "PRIMARY KEY(`id`))",
+            )
+
+            // Seed default achievement definitions
+            seedDefaultAchievements(db)
+        }
+    }
+
+    private fun seedDefaultAchievements(db: SupportSQLiteDatabase) {
+        val achievements = listOf(
+            listOf("first_step", "First Step", "Complete your first qualifying activity", 1),
+            listOf("workout_initiate", "Workout Initiate", "Complete your first workout", 1),
+            listOf("morning_awakened", "Morning Awakened", "Complete your first Morning Activation", 1),
+            listOf("nutrition_logged", "Nutrition Logged", "Log your first qualifying meal", 1),
+            listOf("hydration_habit", "Hydration Habit", "Log your first qualifying hydration", 1),
+            listOf("week_warrior", "Week Warrior", "7 consecutive qualifying days", 7),
+            listOf("xp_100", "XP 100", "Reach 100 total XP", 100),
+        )
+        achievements.forEach { ach ->
+            db.execSQL(
+                "INSERT OR IGNORE INTO `achievement` (`id`, `name`, `description`, `progressTarget`) " +
+                    "VALUES (?, ?, ?, ?)",
+                arrayOf(ach[0], ach[1], ach[2], ach[3]),
+            )
+        }
+    }
+
+    /**
      * Inserts the built-in routine and its steps into an upgrading database.
      * Shared with nothing else on purpose: fresh installs seed through
      * [MorningRoutineSeeds] in the onCreate callback.

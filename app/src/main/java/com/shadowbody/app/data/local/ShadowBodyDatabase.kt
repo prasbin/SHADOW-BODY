@@ -22,6 +22,8 @@ import androidx.room.TypeConverters
  *   (see [Migrations.MIGRATION_4_5]).
  * - v6: + nutrition MVP — [NutritionGoal], [FoodLog], [HydrationLog]
  *   (see [Migrations.MIGRATION_5_6]).
+ * - v7: + progression system — [XpTransaction], [Attribute], [Streak], [Achievement]
+ *   (see [Migrations.MIGRATION_6_7]).
  *
  * Every version bump ships an explicit Migration; destructive fallback is
  * never enabled. Schemas are exported to `app/schemas` and committed.
@@ -50,6 +52,10 @@ import androidx.room.TypeConverters
         NutritionGoal::class,
         FoodLog::class,
         HydrationLog::class,
+        XpTransaction::class,
+        Attribute::class,
+        Streak::class,
+        Achievement::class,
     ],
     version = ShadowBodyDatabase.VERSION,
     exportSchema = true,
@@ -74,9 +80,13 @@ abstract class ShadowBodyDatabase : RoomDatabase() {
     abstract fun nutritionGoalDao(): NutritionGoalDao
     abstract fun foodLogDao(): FoodLogDao
     abstract fun hydrationLogDao(): HydrationLogDao
+    abstract fun xpTransactionDao(): XpTransactionDao
+    abstract fun attributeDao(): AttributeDao
+    abstract fun streakDao(): StreakDao
+    abstract fun achievementDao(): AchievementDao
 
     companion object {
-        const val VERSION = 6
+        const val VERSION = 7
         const val NAME = "shadow_body.db"
 
         @Volatile
@@ -95,6 +105,7 @@ abstract class ShadowBodyDatabase : RoomDatabase() {
                         Migrations.MIGRATION_3_4,
                         Migrations.MIGRATION_4_5,
                         Migrations.MIGRATION_5_6,
+                        Migrations.MIGRATION_6_7,
                     )
                     .build().also { instance = it }
             }

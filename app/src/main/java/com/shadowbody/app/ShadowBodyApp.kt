@@ -12,6 +12,7 @@ import com.shadowbody.app.data.repository.MorningRoutineRepository
 import com.shadowbody.app.data.repository.NutritionRepository
 import com.shadowbody.app.data.repository.PlanRepository
 import com.shadowbody.app.data.repository.ProfileRepository
+import com.shadowbody.app.data.repository.ProgressionRepository
 import com.shadowbody.app.data.repository.ReadinessRepository
 import com.shadowbody.app.data.repository.RecommendationRepository
 import com.shadowbody.app.data.repository.SessionRepository
@@ -50,7 +51,7 @@ class ShadowBodyApp : Application() {
     }
 
     val sessionRepository: SessionRepository by lazy {
-        SessionRepository(database.sessionDao(), planRepository)
+        SessionRepository(database.sessionDao(), planRepository, progressionRepository)
     }
 
     // --- Phase 4: adaptive layer ---
@@ -97,6 +98,7 @@ class ShadowBodyApp : Application() {
             database.morningRoutineLogDao(),
             database.morningRoutineDao(),
             database.morningRoutineStepDao(),
+            progressionRepository,
         )
     }
 
@@ -106,6 +108,17 @@ class ShadowBodyApp : Application() {
             database.nutritionGoalDao(),
             database.foodLogDao(),
             database.hydrationLogDao(),
+            progressionRepository,
+        )
+    }
+
+    // --- Phase 7: progression ---
+    val progressionRepository: ProgressionRepository by lazy {
+        ProgressionRepository(
+            database.xpTransactionDao(),
+            database.attributeDao(),
+            database.streakDao(),
+            database.achievementDao(),
         )
     }
 }

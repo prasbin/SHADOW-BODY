@@ -72,6 +72,7 @@ class MorningActivationRepository(
     private val logs: MorningRoutineLogDao,
     private val routines: MorningRoutineDao,
     private val steps: MorningRoutineStepDao,
+    private val progression: ProgressionRepository? = null,
 ) {
 
     // --- Daily state ---
@@ -188,7 +189,19 @@ class MorningActivationRepository(
             status = MorningCompletionRule.statusFor(decision),
             completedAt = now,
         )
-        return MorningFinishResult.Closed(closed, completed = closed.status == MorningLogStatus.COMPLETED)
+        val completed = closed.status == MorningLogStatus.COMPLETED
+        if (completed) {
+            // Award XP for completed morning activation
+            progression?.awardXp(
+                source = com.shadowbody.app.domain.progression.XpSource.MORNING_ACTIVATION,
+                sourceRef = "morning:$logId",
+            )?.let { result ->
+                if (result is ProgressionRepository.AwardResult.Awarded) {
+                    progression.processProgression()
+                }
+            }
+        }
+        return MorningFinishResult.Closed(closed, completed)
     }
 
     /** Ends a partial run without pretending it was finished. */

@@ -25,6 +25,7 @@ class NutritionRepository(
     private val goalDao: NutritionGoalDao,
     private val foodLogDao: FoodLogDao,
     private val hydrationLogDao: HydrationLogDao,
+    private val progression: ProgressionRepository? = null,
 ) {
     val goal: Flow<NutritionGoal?> = goalDao.getGoal()
 
@@ -63,11 +64,35 @@ class NutritionRepository(
         }
     }
 
-    suspend fun addFood(log: FoodLog): Long = foodLogDao.insert(log)
+    suspend fun addFood(log: FoodLog): Long {
+        val id = foodLogDao.insert(log)
+        // Award XP for qualifying food log (any food log counts)
+        progression?.awardXp(
+            source = com.shadowbody.app.domain.progression.XpSource.MEAL,
+            sourceRef = "food:$id",
+        )?.let { result ->
+            if (result is ProgressionRepository.AwardResult.Awarded) {
+                progression.processProgression()
+            }
+        }
+        return id
+    }
 
     suspend fun deleteFood(id: Long) = foodLogDao.delete(id)
 
-    suspend fun addHydration(log: HydrationLog): Long = hydrationLogDao.insert(log)
+    suspend fun addHydration(log: HydrationLog): Long {
+        val id = hydrationLogDao.insert(log)
+        // Award XP for qualifying hydration log (any hydration log counts)
+        progression?.awardXp(
+            source = com.shadowbody.app.domain.progression.XpSource.HYDRATION,
+            sourceRef = "hydration:$id",
+        )?.let { result ->
+            if (result is ProgressionRepository.AwardResult.Awarded) {
+                progression.processProgression()
+            }
+        }
+        return id
+    }
 
     suspend fun deleteHydration(id: Long) = hydrationLogDao.delete(id)
 
