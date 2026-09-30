@@ -5,7 +5,7 @@ fitness, adaptive training, morning activation, nutrition, hydration,
 progression, grooming, wardrobe, body tracking, and local-first coaching —
 presented as a personal physical-development operating system.
 
-**Current phase: Phase 10 — AI Body Coach MVP** (deterministic local recommendations, transparent reasoning, no cloud/AI required).
+**Release: v1.0.0 — MVP** (complete Phase 1-10 feature set, offline-first, deterministic local logic).
 
 ## UI direction
 
@@ -275,6 +275,96 @@ medical authority — consult a qualified professional where appropriate.
 - Attribute values are abstract game stats, not biomechanical measurements.
 - No prestige/rebirth system or level cap.
 - XP transaction history is read-only — no manual adjustment UI.
+
+## Release v1.0.0 — MVP
+
+### Feature Summary
+
+| Module | Status | Description |
+|--------|--------|-------------|
+| Foundation | Complete | App launch, navigation, dark theme, offline-first |
+| Profile + Baseline | Complete | User profile, body measurements, fitness level |
+| Workout Engine | Complete | Exercise library, plans, sessions, sets, rest timer |
+| Adaptive Workouts | Complete | Readiness-based recommendations, exercise adaptation |
+| Morning Activation | Complete | Daily routines, step tracking, history |
+| Nutrition | Complete | Food/hydration logging, daily goals, history |
+| Progression | Complete | XP, levels, attributes, streaks, achievements |
+| Grooming | Complete | Routines, steps, daily logs, history |
+| Wardrobe + Outfits | Complete | Clothing inventory, deterministic outfit generation |
+| Body Coach | Complete | Deterministic recommendations, transparent reasoning |
+
+### Build
+
+```bash
+./gradlew.bat assembleDebug
+```
+
+APK output: `app/build/outputs/apk/debug/app-debug.apk`
+
+### Testing
+
+```bash
+./gradlew.bat testDebugUnitTest
+```
+
+### Installation
+
+1. Enable USB debugging on device
+2. `adb install app/build/outputs/apk/debug/app-debug.apk`
+3. Launch SHADOW BODY
+
+### Release Checklist
+
+- [x] App launches successfully
+- [x] Navigation works across all modules
+- [x] Dark theme consistent
+- [x] Profile + baseline functional
+- [x] Workout engine functional
+- [x] Adaptive workouts functional
+- [x] Morning activation functional
+- [x] Nutrition functional
+- [x] Progression functional
+- [x] Grooming functional
+- [x] Wardrobe + outfits functional
+- [x] Body Coach functional
+- [x] 284/284 tests passing
+- [x] All migrations verified
+- [x] Build successful
+- [x] Offline operation verified
+- [x] No unnecessary permissions
+- [x] No debug logging
+- [x] No secrets or API keys
+- [x] GitHub backup verified
+
+### Technology Stack
+
+- Kotlin 2.0.21
+- Jetpack Compose (BOM 2024.09.00)
+- Room 2.6.1 (schema v9)
+- Navigation Compose 2.7.7
+- DataStore Preferences 1.1.1
+- Material 3
+- compileSdk 36, minSdk 26, targetSdk 36
+
+### Safety Boundaries
+
+- No medical diagnosis or treatment
+- No injury diagnosis
+- No medication prescriptions
+- No mental health claims
+- No biometric data collection
+- No cloud synchronization
+- No account/login required
+- No network permissions requested
+
+### Known Limitations
+
+- Real-device verification pending (Redmi Note 14 5G)
+- No cloud backup or sync
+- No social features
+- No advanced AI/cloud agents
+- No computer vision or image analysis
+- No release signing configuration (debug only)
 - `org.gradle.java.home` in `gradle.properties` covers Gradle daemons, but the
   wrapper launcher still starts on the shell JDK — set `JAVA_HOME` to a
   JDK 17/21 for the build shell (see Build above).
