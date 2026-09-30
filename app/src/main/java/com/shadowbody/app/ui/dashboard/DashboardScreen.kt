@@ -55,6 +55,7 @@ fun DashboardScreen(
     onOpenProgression: () -> Unit = {},
     onOpenGrooming: () -> Unit = {},
     onOpenWardrobe: () -> Unit = {},
+    onOpenCoach: () -> Unit = {},
     viewModel: DashboardViewModel = viewModel(),
 ) {
     val state by viewModel.uiState.collectAsState()

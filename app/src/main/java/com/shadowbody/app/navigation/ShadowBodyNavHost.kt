@@ -53,6 +53,8 @@ import com.shadowbody.app.ui.wardrobe.WardrobeScreen
 import com.shadowbody.app.ui.wardrobe.WardrobeItemEditorScreen
 import com.shadowbody.app.ui.wardrobe.OutfitViewModel
 import com.shadowbody.app.ui.wardrobe.OutfitGeneratorScreen
+import com.shadowbody.app.ui.coach.CoachViewModel
+import com.shadowbody.app.ui.coach.CoachScreen
 import com.shadowbody.app.ui.progression.ProgressionScreen
 import com.shadowbody.app.ui.progression.ProgressionViewModel
 import com.shadowbody.app.ui.profile.ProfileEditScreen
@@ -100,6 +102,7 @@ fun ShadowBodyNavHost() {
                 onOpenProgression = { navController.navigate(Routes.PROGRESSION) },
                 onOpenGrooming = { navController.navigate(Routes.GROOMING) },
                 onOpenWardrobe = { navController.navigate(Routes.WARDROBE) },
+                onOpenCoach = { navController.navigate(Routes.COACH) },
             )
         }
         composable(Routes.SETTINGS) {
@@ -439,6 +442,14 @@ fun ShadowBodyNavHost() {
             OutfitGeneratorScreen(
                 viewModel = vm,
                 onBack = { navController.popBackStack() },
+            )
+        }
+        composable(Routes.COACH) {
+            val vm: CoachViewModel = viewModel(factory = CoachViewModel.Factory(app))
+            CoachScreen(
+                viewModel = vm,
+                onBack = { navController.popBackStack() },
+                onNavigate = { route -> navController.navigate(route) },
             )
         }
     }

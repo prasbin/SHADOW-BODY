@@ -13,7 +13,7 @@ import org.junit.Test
 class DashboardModulesTest {
 
     @Test
-    fun `dashboard lists all nine future modules`() {
+    fun `dashboard lists all future modules`() {
         val modules = defaultModules()
         assertEquals(9, modules.size)
         assertEquals(9, modules.map { it.id }.distinct().size)

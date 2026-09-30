@@ -27,6 +27,7 @@ object Routes {
     const val WARDROBE = "wardrobe"
     const val WARDROBE_ITEM_EDITOR = "wardrobe_item?itemId={itemId}"
     const val OUTFIT_GENERATOR = "outfit_generator"
+    const val COACH = "coach"
 
     /** Every route registered in the NavHost. Used by tests to catch typos. */
     val all: List<String> = listOf(
@@ -36,6 +37,7 @@ object Routes {
         PROGRESSION, PROGRESSION_HISTORY,
         GROOMING, GROOMING_RUN, GROOMING_EDITOR,
         WARDROBE, WARDROBE_ITEM_EDITOR, OUTFIT_GENERATOR,
+        COACH,
     )
 
     const val START = DASHBOARD

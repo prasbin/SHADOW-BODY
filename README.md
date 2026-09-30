@@ -5,7 +5,7 @@ fitness, adaptive training, morning activation, nutrition, hydration,
 progression, grooming, wardrobe, body tracking, and local-first coaching —
 presented as a personal physical-development operating system.
 
-**Current phase: Phase 9 — Wardrobe + Outfit MVP** (clothing inventory, deterministic outfit generation, Room v9 with explicit migration).
+**Current phase: Phase 10 — AI Body Coach MVP** (deterministic local recommendations, transparent reasoning, no cloud/AI required).
 
 ## UI direction
 
@@ -89,11 +89,11 @@ injuries, deficiencies, or hormonal status; does not prescribe medication;
 and does not claim medical certainty. Recommendations are assistance, not
 medical authority — consult a qualified professional where appropriate.
 
-## Testing status (Phase 9)
+## Testing status (Phase 10)
 
-- Local unit tests: **269/269 pass** — routes, dashboard contract, Room, migrations, Phase 5 Morning Activation, Phase 6 Nutrition, Phase 7 Progression, Phase 8 Grooming, Phase 9 Wardrobe/Outfit generator.
+- Local unit tests: **284/284 pass** — routes, dashboard contract, Room, migrations, Phase 5 Morning Activation, Phase 6 Nutrition, Phase 7 Progression, Phase 8 Grooming, Phase 9 Wardrobe/Outfit, Phase 10 Coach engine.
 - Instrumented tests: **Passing** — MorningFlowTest, Migration4To5Test, Migration5To6Test, Migration6To7Test, Migration7To8Test, Migration8To9Test, NutritionFlowTest, ProgressionFlowTest, and full UI flows.
-- Total: **269/269 unit tests, 0 failures, 0 errors**.
+- Total: **284/284 unit tests, 0 failures, 0 errors**.
 - `Medium_Phone_API_36.1` AVD is unusable: its system image download is
   missing `system.img` (pre-existing environment issue, unrelated to the app).
 - Host RAM is tight (16 GB): the emulator must be stopped before Kotlin
@@ -111,8 +111,8 @@ medical authority — consult a qualified professional where appropriate.
 - [x] Phase 6 — Nutrition MVP
 - [x] Phase 7 — Progression System MVP
 - [x] Phase 8 — Grooming MVP
-- [x] Phase 9 — Wardrobe + Outfit MVP (this build)
-- [ ] Phase 10 — AI Body Coach MVP (local-first, provider abstraction)
+- [x] Phase 9 — Wardrobe + Outfit MVP
+- [x] Phase 10 — AI Body Coach MVP (this build)
 - [ ] Phase 11 — Optimization + real-device release (Redmi Note 14 5G)
 
 ## Planning estimates (not guaranteed deadlines)
@@ -257,7 +257,16 @@ medical authority — consult a qualified professional where appropriate.
 - Room v9: explicit additive `MIGRATION_8_9` creates the two wardrobe tables. Preserves all Phase 1-8 data.
 - Photo support: optional `photoPath` field stores a local file path only. No image analysis, computer vision, or AI recognition.
 
-## Known limitations (Phase 9)
+## Phase 10 architecture
+
+- `domain/coach/`: `CoachEngine` interface (provider abstraction), `LocalDeterministicCoachEngine` (deterministic local implementation), `CoachProfile` (input data), `CoachRecommendation` (output with reason, category, priority, action), `CoachSummary` (sorted recommendations).
+- `ui/coach/`: `CoachScreen` (System-style dashboard with top priority, all recommendations, tap-to-navigate), `CoachViewModel` (combines data from all existing repositories into CoachProfile, calls engine).
+- Deterministic rules: profile setup, high fatigue/soreness → recovery, training day without workout → workout, low hydration → hydration, morning/grooming not started → reminders, wardrobe items → outfit suggestion, missed workouts → consistency, streak → encouragement.
+- No database migration required — Coach operates entirely from existing Phase 1-9 data.
+- No external AI, cloud, API keys, or internet required.
+- Safety: no medical diagnosis, no injury diagnosis, no medication prescriptions, no mental health claims. Conservative recommendations when data indicates limitations.
+
+## Known limitations (Phase 10)
 
 - No social/competitive features — purely single-player progression.
 - No dynamic XP scaling — fixed rewards per activity type.

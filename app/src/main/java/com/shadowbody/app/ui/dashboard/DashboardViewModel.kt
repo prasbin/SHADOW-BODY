@@ -38,7 +38,7 @@ fun defaultModules(): List<SystemModule> = listOf(
     SystemModule("progression", "Progression", "XP · streaks · ranks — Phase 7", 7, ModuleState.LOCKED),
     SystemModule("grooming", "Grooming", "Routines — Phase 8", 8, ModuleState.LOCKED),
     SystemModule("wardrobe", "Wardrobe", "Outfits — Phase 9", 9, ModuleState.LOCKED),
-    SystemModule("coach", "Body Coach", "Guidance — Phase 10", 10, ModuleState.LOCKED),
+    SystemModule("coach", "Body Coach", "AI guidance — Phase 10", 10, ModuleState.LOCKED),
 )
 
 class DashboardViewModel(
