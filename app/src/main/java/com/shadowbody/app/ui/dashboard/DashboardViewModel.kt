@@ -13,8 +13,10 @@ import com.shadowbody.app.data.repository.NutritionRepository
 import com.shadowbody.app.data.repository.WardrobeRepository
 import com.shadowbody.app.data.repository.ReadinessRepository
 import com.shadowbody.app.data.repository.AdaptationRepository
+import com.shadowbody.app.data.repository.PlanRepository
 import com.shadowbody.app.domain.grooming.GroomingDayKey
 import com.shadowbody.app.domain.nutrition.NutritionDayKey
+import com.shadowbody.app.domain.schedule.TrainingScheduler
 import kotlinx.coroutines.flow.MutableStateFlow
 import kotlinx.coroutines.flow.SharingStarted
 import kotlinx.coroutines.flow.StateFlow
@@ -22,6 +24,7 @@ import kotlinx.coroutines.flow.asStateFlow
 import kotlinx.coroutines.flow.combine
 import kotlinx.coroutines.flow.map
 import kotlinx.coroutines.flow.stateIn
+import java.util.Calendar
 
 data class DashboardUiState(
     val hunterName: String = "PLAYER",
@@ -38,6 +41,11 @@ data class DashboardUiState(
     val fatigue: Int = 0,
     val soreness: Int = 0,
     val recentMissedWorkouts: Int = 0,
+    val isTrainingDay: Boolean = false,
+    val todayPlanId: Long? = null,
+    val todayPlanName: String? = null,
+    val todayEstimatedMinutes: Int = 0,
+    val restDayInfo: String? = null,
 )
 
 class DashboardViewModel(
@@ -54,6 +62,7 @@ class DashboardViewModel(
         app.wardrobeRepository.enabledItems,
         app.readinessRepository.latest(),
         app.adaptationRepository.observeMissed(7),
+        app.planRepository.plans(),
     ) { values ->
         val profile = values[0] as? com.shadowbody.app.data.local.UserProfile
         val totalXp = values[1] as? Int ?: 0
@@ -70,6 +79,25 @@ class DashboardViewModel(
         val readiness = values[7] as? com.shadowbody.app.data.local.ReadinessReport
         @Suppress("UNCHECKED_CAST")
         val missedWorkouts = values[8] as? List<com.shadowbody.app.data.local.MissedWorkout>
+        @Suppress("UNCHECKED_CAST")
+        val plans = values[9] as? List<com.shadowbody.app.data.local.WorkoutPlan>
+
+        val cal = Calendar.getInstance()
+        val dayOfWeek = cal.get(Calendar.DAY_OF_WEEK).let {
+            if (it == Calendar.SUNDAY) 7 else it - 1
+        }
+
+        val trainingDays = profile?.trainingDays ?: emptySet()
+        val isTrainingDay = TrainingScheduler.isTrainingDay(dayOfWeek, trainingDays)
+
+        val activePlan = plans?.firstOrNull { it.isActive }
+        val todaySchedule = TrainingScheduler.determineToday(
+            isTrainingDay = isTrainingDay,
+            activePlanId = activePlan?.id,
+            activePlanName = activePlan?.name,
+            estimatedMinutes = activePlan?.targetDurationMin ?: 0,
+            nextTrainingDay = null,
+        )
 
         val level = if (totalXp > 0) (totalXp / 100) + 1 else 1
 
@@ -87,6 +115,11 @@ class DashboardViewModel(
             fatigue = readiness?.fatigue ?: 0,
             soreness = readiness?.soreness ?: 0,
             recentMissedWorkouts = missedWorkouts?.size ?: 0,
+            isTrainingDay = todaySchedule.isTrainingDay,
+            todayPlanId = todaySchedule.scheduledWorkout?.planId,
+            todayPlanName = todaySchedule.scheduledWorkout?.planName,
+            todayEstimatedMinutes = todaySchedule.scheduledWorkout?.estimatedMinutes ?: 0,
+            restDayInfo = todaySchedule.restDayInfo,
         )
     }.stateIn(viewModelScope, SharingStarted.Eagerly, DashboardUiState())
 

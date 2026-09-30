@@ -14,6 +14,8 @@ import androidx.compose.foundation.lazy.LazyColumn
 import androidx.compose.foundation.lazy.items
 import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.filled.Settings
+import androidx.compose.material3.Button
+import androidx.compose.material3.ButtonDefaults
 import androidx.compose.material3.ExperimentalMaterial3Api
 import androidx.compose.material3.Icon
 import androidx.compose.material3.IconButton
@@ -46,6 +48,7 @@ fun DashboardScreen(
     onOpenNutrition: () -> Unit,
     onOpenGrooming: () -> Unit,
     onOpenWardrobe: () -> Unit,
+    onStartTodayWorkout: (Long?) -> Unit,
     viewModel: DashboardViewModel = viewModel(),
 ) {
     val state by viewModel.uiState.collectAsState()
@@ -134,6 +137,64 @@ fun DashboardScreen(
 
             item {
                 Text(
+                    text = "TODAY",
+                    style = MaterialTheme.typography.labelMedium,
+                    color = MaterialTheme.colorScheme.primary,
+                    modifier = Modifier.testTag("todayHeader"),
+                )
+            }
+
+            if (state.isTrainingDay && state.todayPlanId != null) {
+                item {
+                    SystemPanel(accentBorder = true) {
+                        Column(modifier = Modifier.fillMaxWidth()) {
+                            Text(
+                                text = state.todayPlanName ?: "WORKOUT",
+                                style = MaterialTheme.typography.titleMedium,
+                                color = MaterialTheme.colorScheme.onSurface,
+                            )
+                            Text(
+                                text = "${state.todayEstimatedMinutes} MIN",
+                                style = MaterialTheme.typography.bodySmall,
+                                color = MaterialTheme.colorScheme.onSurfaceVariant,
+                            )
+                            Spacer(modifier = Modifier.height(spacing.sm))
+                            Button(
+                                onClick = { onStartTodayWorkout(state.todayPlanId) },
+                                modifier = Modifier.fillMaxWidth().testTag("startWorkoutButton"),
+                                colors = ButtonDefaults.buttonColors(
+                                    containerColor = MaterialTheme.colorScheme.primary,
+                                    contentColor = MaterialTheme.colorScheme.onPrimary,
+                                ),
+                            ) {
+                                Text("START WORKOUT")
+                            }
+                        }
+                    }
+                }
+            } else if (!state.isTrainingDay) {
+                item {
+                    SystemPanel {
+                        Column(modifier = Modifier.fillMaxWidth()) {
+                            Text(
+                                text = "REST DAY",
+                                style = MaterialTheme.typography.titleMedium,
+                                color = MaterialTheme.colorScheme.onSurface,
+                            )
+                            state.restDayInfo?.let {
+                                Text(
+                                    text = it,
+                                    style = MaterialTheme.typography.bodySmall,
+                                    color = MaterialTheme.colorScheme.onSurfaceVariant,
+                                )
+                            }
+                        }
+                    }
+                }
+            }
+
+            item {
+                Text(
                     text = "TODAY'S OBJECTIVES",
                     style = MaterialTheme.typography.labelMedium,
                     color = MaterialTheme.colorScheme.primary,
@@ -154,7 +215,6 @@ fun DashboardScreen(
                 if (state.wardrobeItemCount > 0) {
                     add(Objective("outfit", "Outfit", "Generate today's outfit", onOpenWardrobe))
                 }
-                add(Objective("training", "Training", "View workout plans", onOpenTrain))
             }
 
             items(objectives, key = { it.id }) { obj ->
@@ -209,6 +269,8 @@ fun DashboardScreen(
                 ) {
                     Column(modifier = Modifier.fillMaxWidth()) {
                         val recommendation = when {
+                            state.isTrainingDay && state.todayPlanId != null -> "Today's workout is ready. Start when you're ready."
+                            !state.isTrainingDay -> "Rest day. Recovery is training."
                             state.morningStatus == "NOT_STARTED" -> "Your next action is Morning Activation."
                             state.groomingStatus == "NOT_STARTED" -> "Complete your grooming routine."
                             state.hydrationGoalMl > 0 && state.hydrationMl < state.hydrationGoalMl / 2 -> "Increase your hydration today."

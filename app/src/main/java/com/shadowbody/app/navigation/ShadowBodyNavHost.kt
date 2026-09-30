@@ -102,6 +102,9 @@ fun ShadowBodyNavHost() {
                 onOpenNutrition = { navController.navigate(Routes.NUTRITION) },
                 onOpenGrooming = { navController.navigate(Routes.GROOMING) },
                 onOpenWardrobe = { navController.navigate(Routes.WARDROBE) },
+                onStartTodayWorkout = { planId ->
+                    planId?.let { navController.navigate(Routes.activeWorkout(it)) }
+                },
             )
         }
         composable(Routes.SETTINGS) {

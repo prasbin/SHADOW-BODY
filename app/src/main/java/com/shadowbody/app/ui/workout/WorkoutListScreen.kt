@@ -116,13 +116,13 @@ fun WorkoutListScreen(
                 item {
                     SystemPanel(accentBorder = true) {
                         Text(
-                            text = "[ NO PLANS FORGED ]",
+                            text = "[ TRAINING SCHEDULE ]",
                             style = MaterialTheme.typography.titleSmall,
                             color = MaterialTheme.colorScheme.primary,
                         )
                         Spacer(modifier = Modifier.height(spacing.xs))
                         Text(
-                            text = "Create your first workout plan to begin training.",
+                            text = "Your training schedule will appear here once configured.",
                             style = MaterialTheme.typography.bodySmall,
                             color = MaterialTheme.colorScheme.onSurfaceVariant,
                         )
