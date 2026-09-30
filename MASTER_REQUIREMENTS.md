@@ -32,7 +32,7 @@
 
 ## PROJECT CONTROL
 - [x] Only SHADOW BODY (no sibling project changes)
-- [x] Tests (284/284 passing)
+- [x] Tests (288/288 passing)
 - [x] Build verification (compileDebugKotlin + assembleDebug)
 - [x] GitHub backup (remote verified)
 - [x] Clean working tree
