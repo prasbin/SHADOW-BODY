@@ -52,6 +52,6 @@ class ShadowBodyDatabaseTest {
         // (adaptive) to v4, Phase 5 (morning activation) to v5, Phase 6 (nutrition) to v6,
         // Phase 7 (progression) to v7.
         // Pin the current value so accidental version changes break loudly.
-        assertEquals(8, ShadowBodyDatabase.VERSION)
+        assertEquals(9, ShadowBodyDatabase.VERSION)
     }
 }

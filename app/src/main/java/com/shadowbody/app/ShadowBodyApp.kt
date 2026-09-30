@@ -8,6 +8,8 @@ import com.shadowbody.app.data.repository.AdaptationRepository
 import com.shadowbody.app.data.repository.BaselineRepository
 import com.shadowbody.app.data.repository.ExerciseRepository
 import com.shadowbody.app.data.repository.GroomingRepository
+import com.shadowbody.app.data.repository.WardrobeRepository
+import com.shadowbody.app.data.repository.OutfitRepository
 import com.shadowbody.app.data.repository.MorningActivationRepository
 import com.shadowbody.app.data.repository.MorningRoutineRepository
 import com.shadowbody.app.data.repository.NutritionRepository
@@ -131,5 +133,14 @@ class ShadowBodyApp : Application() {
             database.groomingRoutineStepDao(),
             database.groomingLogDao(),
         )
+    }
+
+    // --- Phase 9: wardrobe ---
+    val wardrobeRepository: WardrobeRepository by lazy {
+        WardrobeRepository(database.wardrobeItemDao())
+    }
+
+    val outfitRepository: OutfitRepository by lazy {
+        OutfitRepository(database.outfitRecordDao())
     }
 }

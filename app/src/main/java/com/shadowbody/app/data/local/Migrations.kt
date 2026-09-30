@@ -803,4 +803,58 @@ object Migrations {
             }
         }
     }
+
+    /**
+     * v8 -> v9: creates the Phase 9 wardrobe tables (`wardrobe_item`, `outfit_record`).
+     * Purely additive: preserves all Phase 1-8 data.
+     */
+    val MIGRATION_8_9 = object : Migration(8, 9) {
+        override fun migrate(db: SupportSQLiteDatabase) {
+            db.execSQL(
+                "CREATE TABLE IF NOT EXISTS `wardrobe_item` (" +
+                    "`id` INTEGER PRIMARY KEY AUTOINCREMENT NOT NULL, " +
+                    "`name` TEXT NOT NULL, " +
+                    "`category` TEXT NOT NULL, " +
+                    "`clothingType` TEXT NOT NULL, " +
+                    "`color` TEXT NOT NULL, " +
+                    "`secondaryColor` TEXT, " +
+                    "`style` TEXT NOT NULL DEFAULT '', " +
+                    "`season` TEXT NOT NULL DEFAULT 'ALL_SEASON', " +
+                    "`occasion` TEXT NOT NULL DEFAULT 'CASUAL', " +
+                    "`fit` TEXT NOT NULL DEFAULT '', " +
+                    "`isEnabled` INTEGER NOT NULL DEFAULT 1, " +
+                    "`notes` TEXT NOT NULL DEFAULT '', " +
+                    "`photoPath` TEXT, " +
+                    "`createdAt` INTEGER NOT NULL DEFAULT 0, " +
+                    "`updatedAt` INTEGER NOT NULL DEFAULT 0)",
+            )
+
+            db.execSQL(
+                "CREATE TABLE IF NOT EXISTS `outfit_record` (" +
+                    "`id` INTEGER PRIMARY KEY AUTOINCREMENT NOT NULL, " +
+                    "`name` TEXT NOT NULL, " +
+                    "`topItemId` INTEGER, " +
+                    "`bottomItemId` INTEGER, " +
+                    "`footwearItemId` INTEGER, " +
+                    "`accessoryItemId` INTEGER, " +
+                    "`occasion` TEXT NOT NULL DEFAULT 'CASUAL', " +
+                    "`season` TEXT NOT NULL DEFAULT 'ALL_SEASON', " +
+                    "`explanation` TEXT NOT NULL DEFAULT '', " +
+                    "`createdAt` INTEGER NOT NULL DEFAULT 0)",
+            )
+
+            db.execSQL(
+                "CREATE INDEX IF NOT EXISTS `index_wardrobe_item_category` " +
+                    "ON `wardrobe_item` (`category`)",
+            )
+            db.execSQL(
+                "CREATE INDEX IF NOT EXISTS `index_wardrobe_item_isEnabled` " +
+                    "ON `wardrobe_item` (`isEnabled`)",
+            )
+            db.execSQL(
+                "CREATE INDEX IF NOT EXISTS `index_outfit_record_createdAt` " +
+                    "ON `outfit_record` (`createdAt`)",
+            )
+        }
+    }
 }

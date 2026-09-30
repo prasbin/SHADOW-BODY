@@ -48,6 +48,11 @@ import com.shadowbody.app.ui.grooming.GroomingViewModel
 import com.shadowbody.app.ui.grooming.GroomingRunScreen
 import com.shadowbody.app.ui.grooming.GroomingRoutineEditorViewModel
 import com.shadowbody.app.ui.grooming.GroomingRoutineEditorScreen
+import com.shadowbody.app.ui.wardrobe.WardrobeViewModel
+import com.shadowbody.app.ui.wardrobe.WardrobeScreen
+import com.shadowbody.app.ui.wardrobe.WardrobeItemEditorScreen
+import com.shadowbody.app.ui.wardrobe.OutfitViewModel
+import com.shadowbody.app.ui.wardrobe.OutfitGeneratorScreen
 import com.shadowbody.app.ui.progression.ProgressionScreen
 import com.shadowbody.app.ui.progression.ProgressionViewModel
 import com.shadowbody.app.ui.profile.ProfileEditScreen
@@ -94,6 +99,7 @@ fun ShadowBodyNavHost() {
                 onOpenNutrition = { navController.navigate(Routes.NUTRITION) },
                 onOpenProgression = { navController.navigate(Routes.PROGRESSION) },
                 onOpenGrooming = { navController.navigate(Routes.GROOMING) },
+                onOpenWardrobe = { navController.navigate(Routes.WARDROBE) },
             )
         }
         composable(Routes.SETTINGS) {
@@ -396,6 +402,41 @@ fun ShadowBodyNavHost() {
                 if (saved.saved) navController.popBackStack()
             }
             GroomingRoutineEditorScreen(
+                viewModel = vm,
+                onBack = { navController.popBackStack() },
+            )
+        }
+        composable(Routes.WARDROBE) {
+            val vm: WardrobeViewModel = viewModel(factory = WardrobeViewModel.Factory(app))
+            WardrobeScreen(
+                viewModel = vm,
+                onBack = { navController.popBackStack() },
+                onAddItem = { navController.navigate(Routes.wardrobeItemEditor()) },
+                onEditItem = { itemId -> navController.navigate(Routes.wardrobeItemEditor(itemId)) },
+                onOpenOutfitGenerator = { navController.navigate(Routes.OUTFIT_GENERATOR) },
+            )
+        }
+        composable(
+            Routes.WARDROBE_ITEM_EDITOR,
+            arguments = listOf(navArgument("itemId") {
+                type = NavType.LongType
+                defaultValue = 0L
+            }),
+        ) { entry ->
+            val itemId = entry.arguments?.getLong("itemId") ?: 0L
+            val vm: WardrobeViewModel = viewModel(
+                key = "wardrobe-editor-$itemId",
+                factory = WardrobeViewModel.Factory(app),
+            )
+            WardrobeItemEditorScreen(
+                viewModel = vm,
+                itemId = if (itemId > 0L) itemId else null,
+                onBack = { navController.popBackStack() },
+            )
+        }
+        composable(Routes.OUTFIT_GENERATOR) {
+            val vm: OutfitViewModel = viewModel(factory = OutfitViewModel.Factory(app))
+            OutfitGeneratorScreen(
                 viewModel = vm,
                 onBack = { navController.popBackStack() },
             )

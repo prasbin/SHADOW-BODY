@@ -24,6 +24,9 @@ object Routes {
     const val GROOMING = "grooming"
     const val GROOMING_RUN = "grooming_run/{logId}"
     const val GROOMING_EDITOR = "grooming_editor?routineId={routineId}"
+    const val WARDROBE = "wardrobe"
+    const val WARDROBE_ITEM_EDITOR = "wardrobe_item?itemId={itemId}"
+    const val OUTFIT_GENERATOR = "outfit_generator"
 
     /** Every route registered in the NavHost. Used by tests to catch typos. */
     val all: List<String> = listOf(
@@ -32,6 +35,7 @@ object Routes {
         ADAPTIVE, MORNING, MORNING_RUN, MORNING_EDITOR, NUTRITION, NUTRITION_HISTORY, NUTRITION_GOAL,
         PROGRESSION, PROGRESSION_HISTORY,
         GROOMING, GROOMING_RUN, GROOMING_EDITOR,
+        WARDROBE, WARDROBE_ITEM_EDITOR, OUTFIT_GENERATOR,
     )
 
     const val START = DASHBOARD
@@ -47,4 +51,6 @@ object Routes {
     fun groomingRun(logId: Long) = "grooming_run/$logId"
     fun groomingEditor(routineId: Long? = null) =
         if (routineId == null) "grooming_editor" else "grooming_editor?routineId=$routineId"
+    fun wardrobeItemEditor(itemId: Long? = null) =
+        if (itemId == null) "wardrobe_item" else "wardrobe_item?itemId=$itemId"
 }

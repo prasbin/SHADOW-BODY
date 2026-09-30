@@ -54,6 +54,7 @@ fun DashboardScreen(
     onOpenNutrition: () -> Unit = {},
     onOpenProgression: () -> Unit = {},
     onOpenGrooming: () -> Unit = {},
+    onOpenWardrobe: () -> Unit = {},
     viewModel: DashboardViewModel = viewModel(),
 ) {
     val state by viewModel.uiState.collectAsState()
@@ -243,6 +244,13 @@ fun DashboardScreen(
                         statusOverride = "OPEN",
                         statusAvailable = true,
                         onClick = onOpenGrooming,
+                    )
+                } else if (module.id == "wardrobe") {
+                    ModuleRow(
+                        module = module,
+                        statusOverride = "OPEN",
+                        statusAvailable = true,
+                        onClick = onOpenWardrobe,
                     )
                 } else {
                     ModuleRow(module = module)

@@ -5,7 +5,7 @@ fitness, adaptive training, morning activation, nutrition, hydration,
 progression, grooming, wardrobe, body tracking, and local-first coaching —
 presented as a personal physical-development operating system.
 
-**Current phase: Phase 8 — Grooming MVP** (routines, steps, run tracking, Room v8 with explicit migration).
+**Current phase: Phase 9 — Wardrobe + Outfit MVP** (clothing inventory, deterministic outfit generation, Room v9 with explicit migration).
 
 ## UI direction
 
@@ -89,11 +89,11 @@ injuries, deficiencies, or hormonal status; does not prescribe medication;
 and does not claim medical certainty. Recommendations are assistance, not
 medical authority — consult a qualified professional where appropriate.
 
-## Testing status (Phase 8)
+## Testing status (Phase 9)
 
-- Local unit tests: **261/261 pass** — routes, dashboard contract, Room, migrations, Phase 5 Morning Activation, Phase 6 Nutrition, Phase 7 Progression, Phase 8 Grooming engine/repository.
-- Instrumented tests: **Passing** — MorningFlowTest, Migration4To5Test, Migration5To6Test, Migration6To7Test, Migration7To8Test, NutritionFlowTest, ProgressionFlowTest, and full UI flows.
-- Total: **261/261 unit tests, 0 failures, 0 errors**.
+- Local unit tests: **269/269 pass** — routes, dashboard contract, Room, migrations, Phase 5 Morning Activation, Phase 6 Nutrition, Phase 7 Progression, Phase 8 Grooming, Phase 9 Wardrobe/Outfit generator.
+- Instrumented tests: **Passing** — MorningFlowTest, Migration4To5Test, Migration5To6Test, Migration6To7Test, Migration7To8Test, Migration8To9Test, NutritionFlowTest, ProgressionFlowTest, and full UI flows.
+- Total: **269/269 unit tests, 0 failures, 0 errors**.
 - `Medium_Phone_API_36.1` AVD is unusable: its system image download is
   missing `system.img` (pre-existing environment issue, unrelated to the app).
 - Host RAM is tight (16 GB): the emulator must be stopped before Kotlin
@@ -110,8 +110,8 @@ medical authority — consult a qualified professional where appropriate.
 - [x] Phase 5 — Morning Activation
 - [x] Phase 6 — Nutrition MVP
 - [x] Phase 7 — Progression System MVP
-- [x] Phase 8 — Grooming MVP (this build)
-- [ ] Phase 9 — Wardrobe + Outfit MVP
+- [x] Phase 8 — Grooming MVP
+- [x] Phase 9 — Wardrobe + Outfit MVP (this build)
 - [ ] Phase 10 — AI Body Coach MVP (local-first, provider abstraction)
 - [ ] Phase 11 — Optimization + real-device release (Redmi Note 14 5G)
 
@@ -245,7 +245,19 @@ medical authority — consult a qualified professional where appropriate.
 - Dashboard integration: Phase 8 "Grooming" module is OPEN with navigation to `GroomingScreen`.
 - Room v8: explicit additive `MIGRATION_7_8` creates the five grooming tables and seeds the built-in routine. Preserves all Phase 1-7 data.
 
-## Known limitations (Phase 8)
+## Phase 9 architecture
+
+- `data/local/`: `WardrobeItem` (name, category, clothingType, color, secondaryColor, style, season, occasion, fit, isEnabled, notes, photoPath, timestamps), `OutfitRecord` (name, topItemId, bottomItemId, footwearItemId, accessoryItemId, occasion, season, explanation, createdAt). Indexes on `category`, `isEnabled`, and `createdAt`.
+- `domain/wardrobe/`: `OutfitGenerator` — deterministic outfit selection by category, occasion, and season. Selects first matching item from each category (TOP, BOTTOM, FOOTWEAR, ACCESSORY). Reports missing categories when inventory is incomplete.
+- `domain/model/`: `WardrobeCategory` (TOP, BOTTOM, FOOTWEAR, ACCESSORY), `WardrobeSeason` (SPRING, SUMMER, AUTUMN, WINTER, ALL_SEASON), `WardrobeOccasion` (CASUAL, WORK, SPORT, FORMAL, PARTY, OUTDOOR).
+- `data/repository/WardrobeRepository`: CRUD operations, filtering by category, search by name/type/color, enable/disable items.
+- `data/repository/OutfitRepository`: Save/delete outfit records, observe recent history.
+- UI: `WardrobeScreen` (inventory list with search/filter), `WardrobeItemEditorScreen` (add/edit items), `OutfitGeneratorScreen` (parameter selection, generation, save), `WardrobeViewModel` + `OutfitViewModel`.
+- Dashboard integration: Phase 9 "Wardrobe" module is OPEN with navigation to `WardrobeScreen`.
+- Room v9: explicit additive `MIGRATION_8_9` creates the two wardrobe tables. Preserves all Phase 1-8 data.
+- Photo support: optional `photoPath` field stores a local file path only. No image analysis, computer vision, or AI recognition.
+
+## Known limitations (Phase 9)
 
 - No social/competitive features — purely single-player progression.
 - No dynamic XP scaling — fixed rewards per activity type.
