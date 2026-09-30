@@ -6,62 +6,94 @@ import androidx.lifecycle.ViewModelProvider
 import androidx.lifecycle.viewModelScope
 import com.shadowbody.app.ShadowBodyApp
 import com.shadowbody.app.data.repository.ProfileRepository
-import com.shadowbody.app.domain.model.ModuleState
-import com.shadowbody.app.domain.model.SystemModule
+import com.shadowbody.app.data.repository.ProgressionRepository
+import com.shadowbody.app.data.repository.GroomingRepository
+import com.shadowbody.app.data.repository.MorningActivationRepository
+import com.shadowbody.app.data.repository.NutritionRepository
+import com.shadowbody.app.data.repository.WardrobeRepository
+import com.shadowbody.app.data.repository.ReadinessRepository
+import com.shadowbody.app.data.repository.AdaptationRepository
+import com.shadowbody.app.domain.grooming.GroomingDayKey
+import com.shadowbody.app.domain.nutrition.NutritionDayKey
 import kotlinx.coroutines.flow.MutableStateFlow
 import kotlinx.coroutines.flow.SharingStarted
 import kotlinx.coroutines.flow.StateFlow
 import kotlinx.coroutines.flow.asStateFlow
+import kotlinx.coroutines.flow.combine
 import kotlinx.coroutines.flow.map
 import kotlinx.coroutines.flow.stateIn
 
-/** Read-only dashboard state. Populated by later phases. */
 data class DashboardUiState(
     val hunterName: String = "PLAYER",
     val level: Int = 1,
-    val xpProgress: Float = 0f,
+    val totalXp: Int = 0,
+    val currentStreak: Int = 0,
     val profileConfigured: Boolean = false,
-    val modules: List<SystemModule> = defaultModules(),
-)
-
-/**
- * Phase roadmap as dashboard entries. Phase 2 unlocks the profile module
- * (handled by the screen via [DashboardUiState.profileConfigured]); every
- * Phase 3-10 module stays LOCKED.
- */
-fun defaultModules(): List<SystemModule> = listOf(
-    SystemModule("profile", "Profile", "Body baseline — Phase 2", 2, ModuleState.LOCKED),
-    SystemModule("workout", "Workout Engine", "Plans & sessions — Phase 3", 3, ModuleState.LOCKED),
-    SystemModule("adaptive", "Adaptive Training", "Progression logic — Phase 4", 4, ModuleState.LOCKED),
-    SystemModule("activation", "Morning Activation", "Daily ignition — Phase 5", 5, ModuleState.LOCKED),
-    SystemModule("nutrition", "Nutrition", "Fuel & hydration — Phase 6", 6, ModuleState.LOCKED),
-    SystemModule("progression", "Progression", "XP · streaks · ranks — Phase 7", 7, ModuleState.LOCKED),
-    SystemModule("grooming", "Grooming", "Routines — Phase 8", 8, ModuleState.LOCKED),
-    SystemModule("wardrobe", "Wardrobe", "Outfits — Phase 9", 9, ModuleState.LOCKED),
-    SystemModule("coach", "Body Coach", "AI guidance — Phase 10", 10, ModuleState.LOCKED),
+    val morningStatus: String = "NOT_STARTED",
+    val groomingStatus: String = "NOT_STARTED",
+    val hydrationMl: Int = 0,
+    val hydrationGoalMl: Int = 0,
+    val wardrobeItemCount: Int = 0,
+    val hasReadinessToday: Boolean = false,
+    val fatigue: Int = 0,
+    val soreness: Int = 0,
+    val recentMissedWorkouts: Int = 0,
 )
 
 class DashboardViewModel(
-    profileRepository: ProfileRepository? = null,
+    private val app: ShadowBodyApp,
 ) : ViewModel() {
 
-    private val unconfigured = MutableStateFlow(DashboardUiState())
+    val uiState: StateFlow<DashboardUiState> = combine(
+        app.profileRepository.profile,
+        app.progressionRepository.observeTotalXp(),
+        app.progressionRepository.observeStreak(),
+        app.morningActivationRepository.observeDay(null, GroomingDayKey.today()),
+        app.groomingRepository.observeDay(0, GroomingDayKey.today()),
+        app.nutritionRepository.getDailySummary(NutritionDayKey.today()),
+        app.wardrobeRepository.enabledItems,
+        app.readinessRepository.latest(),
+        app.adaptationRepository.observeMissed(7),
+    ) { values ->
+        val profile = values[0] as? com.shadowbody.app.data.local.UserProfile
+        val totalXp = values[1] as? Int ?: 0
+        @Suppress("UNCHECKED_CAST")
+        val streak = values[2] as? com.shadowbody.app.data.local.Streak
+        @Suppress("UNCHECKED_CAST")
+        val morningState = values[3] as? com.shadowbody.app.domain.morning.MorningDayState
+        @Suppress("UNCHECKED_CAST")
+        val groomingState = values[4] as? com.shadowbody.app.data.repository.GroomingDayState
+        @Suppress("UNCHECKED_CAST")
+        val nutrition = values[5] as? com.shadowbody.app.data.repository.DailyNutritionSummary
+        @Suppress("UNCHECKED_CAST")
+        val wardrobeItems = values[6] as? List<com.shadowbody.app.data.local.WardrobeItem>
+        val readiness = values[7] as? com.shadowbody.app.data.local.ReadinessReport
+        @Suppress("UNCHECKED_CAST")
+        val missedWorkouts = values[8] as? List<com.shadowbody.app.data.local.MissedWorkout>
 
-    /** Null repository = static Phase 1 behavior (used by legacy tests). */
-    val uiState: StateFlow<DashboardUiState> =
-        if (profileRepository == null) {
-            unconfigured.asStateFlow()
-        } else {
-            profileRepository.profile
-                .map { profile -> DashboardUiState(profileConfigured = profile != null) }
-                .stateIn(viewModelScope, SharingStarted.Eagerly, DashboardUiState())
-        }
+        val level = if (totalXp > 0) (totalXp / 100) + 1 else 1
+
+        DashboardUiState(
+            level = level,
+            totalXp = totalXp,
+            currentStreak = streak?.currentStreak ?: 0,
+            profileConfigured = profile != null,
+            morningStatus = morningState?.status?.toString() ?: "NOT_STARTED",
+            groomingStatus = groomingState?.status ?: "NOT_STARTED",
+            hydrationMl = nutrition?.totalHydrationMl ?: 0,
+            hydrationGoalMl = nutrition?.goal?.hydrationMlTarget ?: 0,
+            wardrobeItemCount = wardrobeItems?.size ?: 0,
+            hasReadinessToday = readiness != null,
+            fatigue = readiness?.fatigue ?: 0,
+            soreness = readiness?.soreness ?: 0,
+            recentMissedWorkouts = missedWorkouts?.size ?: 0,
+        )
+    }.stateIn(viewModelScope, SharingStarted.Eagerly, DashboardUiState())
 
     class Factory(private val app: Application) : ViewModelProvider.Factory {
         @Suppress("UNCHECKED_CAST")
         override fun <T : ViewModel> create(modelClass: Class<T>): T {
-            val repo = (app as ShadowBodyApp).profileRepository
-            return DashboardViewModel(repo) as T
+            return DashboardViewModel(app as ShadowBodyApp) as T
         }
     }
 }

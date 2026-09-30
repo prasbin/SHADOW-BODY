@@ -13,6 +13,8 @@ SHADOW BODY uses an original dark futuristic interface inspired by the
 fictional Solo Leveling "System" aesthetic. It does not copy copyrighted
 characters, artwork, logos, screenshots, or proprietary assets.
 
+The app presents as a personal transformation system: SYSTEM → STATUS → TODAY → OBJECTIVES → ACTIONS → PROGRESS. Development phases are internal project-management information and are not exposed in the user-facing UI.
+
 ## Architecture
 
 Practical MVVM + repository-oriented structure, single `:app` module:

@@ -13,7 +13,6 @@ import androidx.compose.foundation.layout.size
 import androidx.compose.foundation.lazy.LazyColumn
 import androidx.compose.foundation.lazy.items
 import androidx.compose.material.icons.Icons
-import androidx.compose.material.icons.filled.Lock
 import androidx.compose.material.icons.filled.Settings
 import androidx.compose.material3.ExperimentalMaterial3Api
 import androidx.compose.material3.Icon
@@ -29,33 +28,24 @@ import androidx.compose.runtime.getValue
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.platform.testTag
+import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.unit.dp
 import androidx.lifecycle.viewmodel.compose.viewModel
-import com.shadowbody.app.domain.model.ModuleState
-import com.shadowbody.app.domain.model.SystemModule
-import com.shadowbody.app.ui.components.SectionHeader
-import com.shadowbody.app.ui.components.StatCard
 import com.shadowbody.app.ui.components.SystemPanel
 import com.shadowbody.app.ui.theme.LocalShadowSpacing
 
-/**
- * Phase 1 dashboard: status window + honest empty-state stats + locked
- * module list. Real values arrive with Phases 2-10; nothing is fabricated —
- * placeholders are labelled as such.
- */
 @OptIn(ExperimentalMaterial3Api::class)
 @Composable
 fun DashboardScreen(
     onOpenSettings: () -> Unit,
     onOpenProfile: () -> Unit,
-    onOpenWorkout: () -> Unit,
-    onOpenAdaptive: () -> Unit = {},
-    onOpenActivation: () -> Unit = {},
-    onOpenNutrition: () -> Unit = {},
-    onOpenProgression: () -> Unit = {},
-    onOpenGrooming: () -> Unit = {},
-    onOpenWardrobe: () -> Unit = {},
-    onOpenCoach: () -> Unit = {},
+    onOpenTrain: () -> Unit,
+    onOpenTrack: () -> Unit,
+    onOpenCoach: () -> Unit,
+    onOpenActivation: () -> Unit,
+    onOpenNutrition: () -> Unit,
+    onOpenGrooming: () -> Unit,
+    onOpenWardrobe: () -> Unit,
     viewModel: DashboardViewModel = viewModel(),
 ) {
     val state by viewModel.uiState.collectAsState()
@@ -65,11 +55,18 @@ fun DashboardScreen(
         topBar = {
             TopAppBar(
                 title = {
-                    Text(
-                        text = "SHADOW BODY",
-                        style = MaterialTheme.typography.headlineSmall,
-                        modifier = Modifier.testTag("appTitle"),
-                    )
+                    Column {
+                        Text(
+                            text = "SHADOW BODY",
+                            style = MaterialTheme.typography.headlineSmall,
+                            modifier = Modifier.testTag("appTitle"),
+                        )
+                        Text(
+                            text = "SYSTEM ONLINE",
+                            style = MaterialTheme.typography.labelSmall,
+                            color = MaterialTheme.colorScheme.primary,
+                        )
+                    }
                 },
                 actions = {
                     IconButton(onClick = onOpenSettings) {
@@ -97,164 +94,206 @@ fun DashboardScreen(
             verticalArrangement = Arrangement.spacedBy(spacing.sm),
         ) {
             item {
-                // Status window: the signature "system" greeting.
                 SystemPanel(accentBorder = true) {
-                    Text(
-                        text = "[ SYSTEM AWAKENING ]",
-                        style = MaterialTheme.typography.titleSmall,
-                        color = MaterialTheme.colorScheme.primary,
-                    )
-                    Spacer(modifier = Modifier.height(spacing.xs))
-                    Text(
-                        text = "Welcome, ${state.hunterName}. Foundation online.",
-                        style = MaterialTheme.typography.bodyMedium,
-                        color = MaterialTheme.colorScheme.onSurface,
-                    )
-                    Text(
-                        text = "Complete future phases to unlock your modules.",
-                        style = MaterialTheme.typography.bodySmall,
-                        color = MaterialTheme.colorScheme.onSurfaceVariant,
-                    )
-                }
-            }
-
-            item {
-                SectionHeader(title = "Status", trailing = "LV ${state.level}")
-            }
-
-            item {
-                // Profile status: honest empty state vs configured summary.
-                if (state.profileConfigured) {
-                    SystemPanel {
-                        Text(
-                            text = "[ PROFILE ONLINE ]",
-                            style = MaterialTheme.typography.titleSmall,
-                            color = MaterialTheme.colorScheme.tertiary,
-                            modifier = Modifier.testTag("profileStatusOnline"),
-                        )
-                        Spacer(modifier = Modifier.height(spacing.xs))
-                        Text(
-                            text = "Record sealed. Training phases will build on it.",
-                            style = MaterialTheme.typography.bodySmall,
-                            color = MaterialTheme.colorScheme.onSurfaceVariant,
-                        )
-                    }
-                } else {
-                    SystemPanel(accentBorder = true) {
-                        Text(
-                            text = "[ PROFILE NOT CONFIGURED ]",
-                            style = MaterialTheme.typography.titleSmall,
-                            color = MaterialTheme.colorScheme.primary,
-                            modifier = Modifier.testTag("profileStatusMissing"),
-                        )
-                        Spacer(modifier = Modifier.height(spacing.xs))
-                        Text(
-                            text = "Initialize your record to begin.",
-                            style = MaterialTheme.typography.bodySmall,
-                            color = MaterialTheme.colorScheme.onSurfaceVariant,
-                        )
+                    Column(modifier = Modifier.fillMaxWidth()) {
+                        Row(
+                            modifier = Modifier.fillMaxWidth(),
+                            horizontalArrangement = Arrangement.SpaceBetween,
+                            verticalAlignment = Alignment.CenterVertically,
+                        ) {
+                            Column {
+                                Text(
+                                    text = "LEVEL ${state.level.toString().padStart(2, '0')}",
+                                    style = MaterialTheme.typography.headlineMedium,
+                                    color = MaterialTheme.colorScheme.primary,
+                                    fontWeight = FontWeight.Bold,
+                                )
+                                Text(
+                                    text = "${state.totalXp} XP",
+                                    style = MaterialTheme.typography.bodyMedium,
+                                    color = MaterialTheme.colorScheme.onSurface,
+                                )
+                            }
+                            Column(horizontalAlignment = Alignment.End) {
+                                Text(
+                                    text = "${state.currentStreak}",
+                                    style = MaterialTheme.typography.headlineMedium,
+                                    color = MaterialTheme.colorScheme.tertiary,
+                                    fontWeight = FontWeight.Bold,
+                                )
+                                Text(
+                                    text = "STREAK",
+                                    style = MaterialTheme.typography.labelSmall,
+                                    color = MaterialTheme.colorScheme.onSurfaceVariant,
+                                )
+                            }
+                        }
                     }
                 }
             }
 
             item {
-                Row(
-                    modifier = Modifier.fillMaxWidth(),
-                    horizontalArrangement = Arrangement.spacedBy(spacing.sm),
+                Text(
+                    text = "TODAY'S OBJECTIVES",
+                    style = MaterialTheme.typography.labelMedium,
+                    color = MaterialTheme.colorScheme.primary,
+                    modifier = Modifier.testTag("todayObjectivesHeader"),
+                )
+            }
+
+            val objectives = buildList {
+                if (state.morningStatus == "NOT_STARTED") {
+                    add(Objective("morning", "Morning Activation", "Start your daily routine", onOpenActivation))
+                }
+                if (state.groomingStatus == "NOT_STARTED") {
+                    add(Objective("grooming", "Grooming", "Complete your grooming routine", onOpenGrooming))
+                }
+                if (state.hydrationGoalMl > 0 && state.hydrationMl < state.hydrationGoalMl / 2) {
+                    add(Objective("hydration", "Hydration", "${state.hydrationMl}/${state.hydrationGoalMl}ml", onOpenNutrition))
+                }
+                if (state.wardrobeItemCount > 0) {
+                    add(Objective("outfit", "Outfit", "Generate today's outfit", onOpenWardrobe))
+                }
+                add(Objective("training", "Training", "View workout plans", onOpenTrain))
+            }
+
+            items(objectives, key = { it.id }) { obj ->
+                SystemPanel(
+                    modifier = Modifier
+                        .fillMaxWidth()
+                        .clickable { obj.action() }
+                        .testTag("objective:${obj.id}"),
                 ) {
-                    StatCard(
-                        label = "Level",
-                        value = state.level.toString().padStart(3, '0'),
-                        modifier = Modifier.weight(1f),
-                    )
-                    StatCard(
-                        label = "Streak",
-                        value = "—",
-                        footnote = "Starts in Phase 7",
-                        modifier = Modifier.weight(1f),
-                    )
+                    Row(
+                        modifier = Modifier.fillMaxWidth(),
+                        horizontalArrangement = Arrangement.SpaceBetween,
+                        verticalAlignment = Alignment.CenterVertically,
+                    ) {
+                        Column(modifier = Modifier.weight(1f)) {
+                            Text(
+                                text = obj.title,
+                                style = MaterialTheme.typography.titleSmall,
+                                color = MaterialTheme.colorScheme.onSurface,
+                            )
+                            Text(
+                                text = obj.subtitle,
+                                style = MaterialTheme.typography.bodySmall,
+                                color = MaterialTheme.colorScheme.onSurfaceVariant,
+                            )
+                        }
+                        Text(
+                            text = "GO",
+                            style = MaterialTheme.typography.labelSmall,
+                            color = MaterialTheme.colorScheme.primary,
+                        )
+                    }
                 }
             }
 
             item {
-                StatCard(
-                    label = "Experience",
-                    value = "0 XP",
-                    progress = state.xpProgress,
-                    footnote = "Progression engine arrives in Phase 7",
+                Spacer(modifier = Modifier.height(spacing.xs))
+                Text(
+                    text = "SYSTEM RECOMMENDATION",
+                    style = MaterialTheme.typography.labelMedium,
+                    color = MaterialTheme.colorScheme.primary,
                 )
             }
 
             item {
-                SectionHeader(title = "Missions", trailing = "${state.modules.size} SEALED")
+                SystemPanel(
+                    accentBorder = true,
+                    modifier = Modifier
+                        .fillMaxWidth()
+                        .clickable { onOpenCoach() }
+                        .testTag("systemRecommendation"),
+                ) {
+                    Column(modifier = Modifier.fillMaxWidth()) {
+                        val recommendation = when {
+                            state.morningStatus == "NOT_STARTED" -> "Your next action is Morning Activation."
+                            state.groomingStatus == "NOT_STARTED" -> "Complete your grooming routine."
+                            state.hydrationGoalMl > 0 && state.hydrationMl < state.hydrationGoalMl / 2 -> "Increase your hydration today."
+                            state.recentMissedWorkouts > 0 -> "Maintain consistency with your training."
+                            state.currentStreak > 0 -> "Keep your ${state.currentStreak}-day streak alive."
+                            else -> "All systems nominal. Review your progress."
+                        }
+                        Text(
+                            text = recommendation,
+                            style = MaterialTheme.typography.bodyMedium,
+                            color = MaterialTheme.colorScheme.onSurface,
+                        )
+                        Spacer(modifier = Modifier.height(spacing.xs))
+                        Text(
+                            text = "VIEW COACH",
+                            style = MaterialTheme.typography.labelSmall,
+                            color = MaterialTheme.colorScheme.primary,
+                        )
+                    }
+                }
             }
 
-            items(state.modules, key = { it.id }) { module ->
-                // Phase 2: the profile module is live; Phase 3: workout too.
-                // Everything else stays sealed.
-                if (module.id == "profile") {
-                    ModuleRow(
-                        module = module,
-                        statusOverride = if (state.profileConfigured) "OPEN" else "CREATE",
-                        statusAvailable = true,
-                        onClick = onOpenProfile,
-                    )
-                } else if (module.id == "workout") {
-                    ModuleRow(
-                        module = module,
-                        statusOverride = "OPEN",
-                        statusAvailable = true,
-                        onClick = onOpenWorkout,
-                    )
-                } else if (module.id == "adaptive") {
-                    // Phase 4: adaptive training is live and reachable.
-                    ModuleRow(
-                        module = module,
-                        statusOverride = "OPEN",
-                        statusAvailable = true,
-                        onClick = onOpenAdaptive,
-                    )
-                } else if (module.id == "activation") {
-                    // Phase 5: morning activation is live and reachable.
-                    ModuleRow(
-                        module = module,
-                        statusOverride = "OPEN",
-                        statusAvailable = true,
-                        onClick = onOpenActivation,
-                    )
-                } else if (module.id == "nutrition") {
-                    // Phase 6: nutrition is live and reachable.
-                    ModuleRow(
-                        module = module,
-                        statusOverride = "OPEN",
-                        statusAvailable = true,
-                        onClick = onOpenNutrition,
-                    )
-                } else if (module.id == "progression") {
-                    // Phase 7: progression is live and reachable.
-                    ModuleRow(
-                        module = module,
-                        statusOverride = "OPEN",
-                        statusAvailable = true,
-                        onClick = onOpenProgression,
-                    )
-                } else if (module.id == "grooming") {
-                    // Phase 8: grooming is live and reachable.
-                    ModuleRow(
-                        module = module,
-                        statusOverride = "OPEN",
-                        statusAvailable = true,
-                        onClick = onOpenGrooming,
-                    )
-                } else if (module.id == "wardrobe") {
-                    ModuleRow(
-                        module = module,
-                        statusOverride = "OPEN",
-                        statusAvailable = true,
-                        onClick = onOpenWardrobe,
-                    )
-                } else {
-                    ModuleRow(module = module)
+            item {
+                Spacer(modifier = Modifier.height(spacing.xs))
+                Row(
+                    modifier = Modifier.fillMaxWidth(),
+                    horizontalArrangement = Arrangement.spacedBy(spacing.sm),
+                ) {
+                    SystemPanel(
+                        modifier = Modifier
+                            .weight(1f)
+                            .clickable { onOpenTrain() }
+                            .testTag("navTrain"),
+                    ) {
+                        Column(modifier = Modifier.fillMaxWidth()) {
+                            Text(
+                                text = "TRAIN",
+                                style = MaterialTheme.typography.labelMedium,
+                                color = MaterialTheme.colorScheme.primary,
+                            )
+                            Text(
+                                text = "Workouts",
+                                style = MaterialTheme.typography.bodySmall,
+                                color = MaterialTheme.colorScheme.onSurfaceVariant,
+                            )
+                        }
+                    }
+                    SystemPanel(
+                        modifier = Modifier
+                            .weight(1f)
+                            .clickable { onOpenTrack() }
+                            .testTag("navTrack"),
+                    ) {
+                        Column(modifier = Modifier.fillMaxWidth()) {
+                            Text(
+                                text = "TRACK",
+                                style = MaterialTheme.typography.labelMedium,
+                                color = MaterialTheme.colorScheme.primary,
+                            )
+                            Text(
+                                text = "Progress",
+                                style = MaterialTheme.typography.bodySmall,
+                                color = MaterialTheme.colorScheme.onSurfaceVariant,
+                            )
+                        }
+                    }
+                    SystemPanel(
+                        modifier = Modifier
+                            .weight(1f)
+                            .clickable { onOpenProfile() }
+                            .testTag("navProfile"),
+                    ) {
+                        Column(modifier = Modifier.fillMaxWidth()) {
+                            Text(
+                                text = "PROFILE",
+                                style = MaterialTheme.typography.labelMedium,
+                                color = MaterialTheme.colorScheme.primary,
+                            )
+                            Text(
+                                text = "Player",
+                                style = MaterialTheme.typography.bodySmall,
+                                color = MaterialTheme.colorScheme.onSurfaceVariant,
+                            )
+                        }
+                    }
                 }
             }
 
@@ -263,59 +302,9 @@ fun DashboardScreen(
     }
 }
 
-@Composable
-private fun ModuleRow(
-    module: SystemModule,
-    statusOverride: String? = null,
-    statusAvailable: Boolean = false,
-    onClick: (() -> Unit)? = null,
-) {
-    val spacing = LocalShadowSpacing.current
-    SystemPanel {
-        Row(
-            modifier = Modifier
-                .fillMaxWidth()
-                .clickable(enabled = onClick != null, onClick = { onClick?.invoke() })
-                .testTag("module:${module.id}"),
-            verticalAlignment = Alignment.CenterVertically,
-            horizontalArrangement = Arrangement.SpaceBetween,
-        ) {
-            Column(modifier = Modifier.weight(1f)) {
-                Text(
-                    text = module.title.uppercase(),
-                    style = MaterialTheme.typography.titleMedium,
-                    color = MaterialTheme.colorScheme.onSurface,
-                )
-                Text(
-                    text = module.subtitle,
-                    style = MaterialTheme.typography.bodySmall,
-                    color = MaterialTheme.colorScheme.onSurfaceVariant,
-                )
-            }
-            Row(
-                verticalAlignment = Alignment.CenterVertically,
-                horizontalArrangement = Arrangement.spacedBy(4.dp),
-            ) {
-                val isOpen = statusAvailable || module.state == ModuleState.AVAILABLE
-                Text(
-                    text = statusOverride
-                        ?: if (module.state == ModuleState.AVAILABLE) "OPEN" else "SEALED",
-                    style = MaterialTheme.typography.labelSmall,
-                    color = if (isOpen) {
-                        MaterialTheme.colorScheme.tertiary
-                    } else {
-                        MaterialTheme.colorScheme.onSurfaceVariant
-                    },
-                )
-                if (module.state == ModuleState.LOCKED) {
-                    Icon(
-                        imageVector = Icons.Filled.Lock,
-                        contentDescription = null,
-                        tint = MaterialTheme.colorScheme.onSurfaceVariant,
-                        modifier = Modifier.size(16.dp),
-                    )
-                }
-            }
-        }
-    }
-}
+private data class Objective(
+    val id: String,
+    val title: String,
+    val subtitle: String,
+    val action: () -> Unit,
+)

@@ -82,7 +82,7 @@ fun ProfileScreen(
                     )
                     Spacer(modifier = Modifier.height(spacing.xs))
                     Text(
-                        text = "Initialize your record to unlock training phases.",
+                        text = "Initialize your record to begin your transformation.",
                         style = MaterialTheme.typography.bodyMedium,
                         color = MaterialTheme.colorScheme.onSurface,
                     )

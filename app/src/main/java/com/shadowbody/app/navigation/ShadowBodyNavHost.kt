@@ -95,14 +95,13 @@ fun ShadowBodyNavHost() {
                 viewModel = vm,
                 onOpenSettings = { navController.navigate(Routes.SETTINGS) },
                 onOpenProfile = { navController.navigate(Routes.PROFILE) },
-                onOpenWorkout = { navController.navigate(Routes.WORKOUT) },
-                onOpenAdaptive = { navController.navigate(Routes.ADAPTIVE) },
+                onOpenTrain = { navController.navigate(Routes.WORKOUT) },
+                onOpenTrack = { navController.navigate(Routes.PROGRESSION) },
+                onOpenCoach = { navController.navigate(Routes.COACH) },
                 onOpenActivation = { navController.navigate(Routes.MORNING) },
                 onOpenNutrition = { navController.navigate(Routes.NUTRITION) },
-                onOpenProgression = { navController.navigate(Routes.PROGRESSION) },
                 onOpenGrooming = { navController.navigate(Routes.GROOMING) },
                 onOpenWardrobe = { navController.navigate(Routes.WARDROBE) },
-                onOpenCoach = { navController.navigate(Routes.COACH) },
             )
         }
         composable(Routes.SETTINGS) {
