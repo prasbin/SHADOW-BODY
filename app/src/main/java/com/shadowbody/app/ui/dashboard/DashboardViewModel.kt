@@ -17,6 +17,7 @@ import com.shadowbody.app.data.repository.PlanRepository
 import com.shadowbody.app.domain.grooming.GroomingDayKey
 import com.shadowbody.app.domain.nutrition.NutritionDayKey
 import com.shadowbody.app.domain.schedule.TrainingScheduler
+import com.shadowbody.app.domain.schedule.TrainingOrchestrator
 import kotlinx.coroutines.flow.MutableStateFlow
 import kotlinx.coroutines.flow.SharingStarted
 import kotlinx.coroutines.flow.StateFlow
@@ -24,6 +25,7 @@ import kotlinx.coroutines.flow.asStateFlow
 import kotlinx.coroutines.flow.combine
 import kotlinx.coroutines.flow.map
 import kotlinx.coroutines.flow.stateIn
+import kotlinx.coroutines.launch
 import java.util.Calendar
 
 data class DashboardUiState(
@@ -51,6 +53,8 @@ data class DashboardUiState(
 class DashboardViewModel(
     private val app: ShadowBodyApp,
 ) : ViewModel() {
+
+    private val orchestrator: TrainingOrchestrator = app.trainingOrchestrator
 
     val uiState: StateFlow<DashboardUiState> = combine(
         app.profileRepository.profile,
@@ -122,6 +126,12 @@ class DashboardViewModel(
             restDayInfo = todaySchedule.restDayInfo,
         )
     }.stateIn(viewModelScope, SharingStarted.Eagerly, DashboardUiState())
+
+    init {
+        viewModelScope.launch {
+            orchestrator.initializeIfNeeded()
+        }
+    }
 
     class Factory(private val app: Application) : ViewModelProvider.Factory {
         @Suppress("UNCHECKED_CAST")

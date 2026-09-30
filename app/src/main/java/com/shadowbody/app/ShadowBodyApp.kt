@@ -143,4 +143,14 @@ class ShadowBodyApp : Application() {
     val outfitRepository: OutfitRepository by lazy {
         OutfitRepository(database.outfitRecordDao())
     }
+
+    // --- Automatic training orchestration ---
+    val trainingOrchestrator: com.shadowbody.app.domain.schedule.TrainingOrchestrator by lazy {
+        com.shadowbody.app.domain.schedule.TrainingOrchestrator(
+            profileRepository = profileRepository,
+            planRepository = planRepository,
+            sessionRepository = sessionRepository,
+            adaptivePlanner = adaptivePlanner,
+        )
+    }
 }
