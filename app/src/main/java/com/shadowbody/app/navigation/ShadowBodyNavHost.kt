@@ -42,6 +42,12 @@ import com.shadowbody.app.ui.morning.MorningRunScreen
 import com.shadowbody.app.ui.morning.MorningRunViewModel
 import com.shadowbody.app.ui.nutrition.NutritionScreen
 import com.shadowbody.app.ui.nutrition.NutritionViewModel
+import com.shadowbody.app.ui.grooming.GroomingRunViewModel
+import com.shadowbody.app.ui.grooming.GroomingScreen
+import com.shadowbody.app.ui.grooming.GroomingViewModel
+import com.shadowbody.app.ui.grooming.GroomingRunScreen
+import com.shadowbody.app.ui.grooming.GroomingRoutineEditorViewModel
+import com.shadowbody.app.ui.grooming.GroomingRoutineEditorScreen
 import com.shadowbody.app.ui.progression.ProgressionScreen
 import com.shadowbody.app.ui.progression.ProgressionViewModel
 import com.shadowbody.app.ui.profile.ProfileEditScreen
@@ -87,6 +93,7 @@ fun ShadowBodyNavHost() {
                 onOpenActivation = { navController.navigate(Routes.MORNING) },
                 onOpenNutrition = { navController.navigate(Routes.NUTRITION) },
                 onOpenProgression = { navController.navigate(Routes.PROGRESSION) },
+                onOpenGrooming = { navController.navigate(Routes.GROOMING) },
             )
         }
         composable(Routes.SETTINGS) {
@@ -343,6 +350,52 @@ fun ShadowBodyNavHost() {
         composable(Routes.PROGRESSION) {
             val vm: ProgressionViewModel = viewModel(factory = ProgressionViewModel.Factory(app))
             ProgressionScreen(
+                viewModel = vm,
+                onBack = { navController.popBackStack() },
+            )
+        }
+        composable(Routes.GROOMING) {
+            val vm: GroomingViewModel = viewModel(factory = GroomingViewModel.Factory(app))
+            GroomingScreen(
+                viewModel = vm,
+                onBack = { navController.popBackStack() },
+            )
+        }
+        composable(
+            Routes.GROOMING_RUN,
+            arguments = listOf(navArgument("logId") { type = NavType.LongType }),
+        ) { entry ->
+            val logId = entry.arguments?.getLong("logId") ?: 0L
+            val vm: GroomingRunViewModel = viewModel(
+                key = "grooming-run-$logId",
+                factory = GroomingRunViewModel.Factory(app, logId),
+            )
+            GroomingRunScreen(
+                viewModel = vm,
+                onFinished = { navController.popBackStack() },
+                onBack = { navController.popBackStack() },
+            )
+        }
+        composable(
+            Routes.GROOMING_EDITOR,
+            arguments = listOf(navArgument("routineId") {
+                type = NavType.LongType
+                defaultValue = 0L
+            }),
+        ) { entry ->
+            val routineId = entry.arguments?.getLong("routineId") ?: 0L
+            val vm: GroomingRoutineEditorViewModel = viewModel(
+                key = "grooming-editor-$routineId",
+                factory = GroomingRoutineEditorViewModel.Factory(
+                    app,
+                    routineId.takeIf { it > 0L },
+                ),
+            )
+            val saved by vm.state.collectAsState()
+            LaunchedEffect(saved.saved) {
+                if (saved.saved) navController.popBackStack()
+            }
+            GroomingRoutineEditorScreen(
                 viewModel = vm,
                 onBack = { navController.popBackStack() },
             )

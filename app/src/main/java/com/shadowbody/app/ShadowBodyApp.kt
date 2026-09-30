@@ -7,6 +7,7 @@ import com.shadowbody.app.data.repository.AdaptiveWorkoutPlanner
 import com.shadowbody.app.data.repository.AdaptationRepository
 import com.shadowbody.app.data.repository.BaselineRepository
 import com.shadowbody.app.data.repository.ExerciseRepository
+import com.shadowbody.app.data.repository.GroomingRepository
 import com.shadowbody.app.data.repository.MorningActivationRepository
 import com.shadowbody.app.data.repository.MorningRoutineRepository
 import com.shadowbody.app.data.repository.NutritionRepository
@@ -119,6 +120,16 @@ class ShadowBodyApp : Application() {
             database.attributeDao(),
             database.streakDao(),
             database.achievementDao(),
+        )
+    }
+
+    // --- Phase 8: grooming ---
+    val groomingRepository: GroomingRepository by lazy {
+        GroomingRepository(
+            database.groomingPreferencesDao(),
+            database.groomingRoutineDao(),
+            database.groomingRoutineStepDao(),
+            database.groomingLogDao(),
         )
     }
 }

@@ -5,7 +5,7 @@ fitness, adaptive training, morning activation, nutrition, hydration,
 progression, grooming, wardrobe, body tracking, and local-first coaching —
 presented as a personal physical-development operating system.
 
-**Current phase: Phase 7 — Progression System MVP** (XP, levels, attributes, streaks, achievements, Room v7 with explicit migration).
+**Current phase: Phase 8 — Grooming MVP** (routines, steps, run tracking, Room v8 with explicit migration).
 
 ## UI direction
 
@@ -89,11 +89,11 @@ injuries, deficiencies, or hormonal status; does not prescribe medication;
 and does not claim medical certainty. Recommendations are assistance, not
 medical authority — consult a qualified professional where appropriate.
 
-## Testing status (Phase 7)
+## Testing status (Phase 8)
 
-- Local unit tests: **263/263 pass** — routes, dashboard contract, Room, migrations, Phase 5 Morning Activation, Phase 6 Nutrition, Phase 7 Progression engine/validation/repository/streaks/achievements.
-- Instrumented tests: **Passing** — MorningFlowTest, Migration4To5Test, Migration5To6Test, Migration6To7Test, NutritionFlowTest, ProgressionFlowTest, and full UI flows.
-- Total: **263/263 unit tests, 0 failures, 0 errors**.
+- Local unit tests: **261/261 pass** — routes, dashboard contract, Room, migrations, Phase 5 Morning Activation, Phase 6 Nutrition, Phase 7 Progression, Phase 8 Grooming engine/repository.
+- Instrumented tests: **Passing** — MorningFlowTest, Migration4To5Test, Migration5To6Test, Migration6To7Test, Migration7To8Test, NutritionFlowTest, ProgressionFlowTest, and full UI flows.
+- Total: **261/261 unit tests, 0 failures, 0 errors**.
 - `Medium_Phone_API_36.1` AVD is unusable: its system image download is
   missing `system.img` (pre-existing environment issue, unrelated to the app).
 - Host RAM is tight (16 GB): the emulator must be stopped before Kotlin
@@ -109,8 +109,8 @@ medical authority — consult a qualified professional where appropriate.
 - [x] Phase 4 — Adaptive Workouts
 - [x] Phase 5 — Morning Activation
 - [x] Phase 6 — Nutrition MVP
-- [x] Phase 7 — Progression System MVP (this build)
-- [ ] Phase 8 — Grooming MVP
+- [x] Phase 7 — Progression System MVP
+- [x] Phase 8 — Grooming MVP (this build)
 - [ ] Phase 9 — Wardrobe + Outfit MVP
 - [ ] Phase 10 — AI Body Coach MVP (local-first, provider abstraction)
 - [ ] Phase 11 — Optimization + real-device release (Redmi Note 14 5G)
@@ -236,7 +236,16 @@ medical authority — consult a qualified professional where appropriate.
 - Dashboard integration: Phase 7 "Progression" module is OPEN with navigation to `ProgressionScreen`.
 - Room v7: explicit additive `MIGRATION_6_7` creates the four progression tables and seeds achievement definitions. Preserves all Phase 1-6 data.
 
-## Known limitations (Phase 7)
+## Phase 8 architecture
+
+- `data/local/`: `GroomingPreferences` (singleton row: frequency, preferred routine), `GroomingRoutine` (seedKey, name, description, isActive, sortOrder), `GroomingRoutineStep` (routineId, title, instructions, category, targetDurationSec, position, isEnabled, isSeeded), `GroomingLog` (routineId, routineName, dayKey, attempt, startedAt, completedAt, status, completedSteps, skippedSteps, totalSteps, notes), `GroomingStepLog` (logId, stepId, position, title, category, targetDurationSec, outcome, elapsedSec, recordedAt). Unique indexes on `(routineId, position)` and `(routineId, dayKey, attempt)`.
+- `domain/grooming/`: `GroomingDayKey` (ISO date utility), `GroomingStepCategory` (HAIR, SKIN, ORAL_CARE, FACE, BODY, NAILS, HYGIENE, OTHER), `GroomingCompletionRule` (pure logic for run state transitions).
+- `data/repository/GroomingRepository`: `startRun()` creates a log + step logs from the active routine, `recordStep()` updates outcome/elapsed, `finish()` marks complete, `abandon()` marks abandoned, `ensureSeeded()` inserts the built-in "Daily Essentials" routine on first launch.
+- UI: `GroomingScreen` (dashboard module: day status card, routine list, recent history), `GroomingRunScreen` (step-by-step run with complete/skip buttons), `GroomingRoutineEditorScreen` (create/edit routines with steps), `GroomingViewModel` + `GroomingRunViewModel` + `GroomingRoutineEditorViewModel`.
+- Dashboard integration: Phase 8 "Grooming" module is OPEN with navigation to `GroomingScreen`.
+- Room v8: explicit additive `MIGRATION_7_8` creates the five grooming tables and seeds the built-in routine. Preserves all Phase 1-7 data.
+
+## Known limitations (Phase 8)
 
 - No social/competitive features — purely single-player progression.
 - No dynamic XP scaling — fixed rewards per activity type.

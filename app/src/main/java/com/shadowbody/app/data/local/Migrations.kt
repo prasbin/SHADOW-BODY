@@ -621,4 +621,186 @@ object Migrations {
             }
         }
     }
+
+    /**
+     * v7 -> v8: creates the Phase 8 grooming tables (`grooming_preferences`, `grooming_routine`, `grooming_routine_step`, `grooming_log`, `grooming_step_log`).
+     * Purely additive: preserves all Phase 1-7 data.
+     * Seeds a built-in starter grooming routine with common grooming steps.
+     */
+    val MIGRATION_7_8 = object : Migration(7, 8) {
+        override fun migrate(db: SupportSQLiteDatabase) {
+            db.execSQL(
+                "CREATE TABLE IF NOT EXISTS `grooming_preferences` (" +
+                    "`id` INTEGER NOT NULL, " +
+                    "`routineFrequencyDays` INTEGER NOT NULL DEFAULT 1, " +
+                    "`preferredRoutineId` INTEGER, " +
+                    "`updatedAt` INTEGER NOT NULL DEFAULT 0, " +
+                    "PRIMARY KEY(`id`))",
+            )
+
+            db.execSQL(
+                "CREATE TABLE IF NOT EXISTS `grooming_routine` (" +
+                    "`id` INTEGER PRIMARY KEY AUTOINCREMENT NOT NULL, " +
+                    "`seedKey` TEXT, " +
+                    "`name` TEXT NOT NULL, " +
+                    "`description` TEXT NOT NULL DEFAULT '', " +
+                    "`isActive` INTEGER NOT NULL DEFAULT 1, " +
+                    "`sortOrder` INTEGER NOT NULL DEFAULT 0, " +
+                    "`createdAt` INTEGER NOT NULL DEFAULT 0, " +
+                    "`updatedAt` INTEGER NOT NULL DEFAULT 0)",
+            )
+            db.execSQL(
+                "CREATE UNIQUE INDEX IF NOT EXISTS `index_grooming_routine_seedKey` " +
+                    "ON `grooming_routine` (`seedKey`)",
+            )
+            db.execSQL(
+                "CREATE INDEX IF NOT EXISTS `index_grooming_routine_sortOrder` " +
+                    "ON `grooming_routine` (`sortOrder`)",
+            )
+
+            db.execSQL(
+                "CREATE TABLE IF NOT EXISTS `grooming_routine_step` (" +
+                    "`id` INTEGER PRIMARY KEY AUTOINCREMENT NOT NULL, " +
+                    "`routineId` INTEGER NOT NULL, " +
+                    "`title` TEXT NOT NULL, " +
+                    "`instructions` TEXT NOT NULL, " +
+                    "`category` TEXT NOT NULL, " +
+                    "`targetDurationSec` INTEGER, " +
+                    "`position` INTEGER NOT NULL, " +
+                    "`isEnabled` INTEGER NOT NULL DEFAULT 1, " +
+                    "`isSeeded` INTEGER NOT NULL DEFAULT 0, " +
+                    "FOREIGN KEY(`routineId`) REFERENCES `grooming_routine`(`id`) " +
+                    "ON UPDATE NO ACTION ON DELETE CASCADE)",
+            )
+            db.execSQL(
+                "CREATE UNIQUE INDEX IF NOT EXISTS " +
+                    "`index_grooming_routine_step_routineId_position` " +
+                    "ON `grooming_routine_step` (`routineId`, `position`)",
+            )
+            db.execSQL(
+                "CREATE INDEX IF NOT EXISTS `index_grooming_routine_step_routineId` " +
+                    "ON `grooming_routine_step` (`routineId`)",
+            )
+
+            db.execSQL(
+                "CREATE TABLE IF NOT EXISTS `grooming_log` (" +
+                    "`id` INTEGER PRIMARY KEY AUTOINCREMENT NOT NULL, " +
+                    "`routineId` INTEGER, " +
+                    "`routineName` TEXT NOT NULL, " +
+                    "`dayKey` TEXT NOT NULL, " +
+                    "`attempt` INTEGER NOT NULL, " +
+                    "`startedAt` INTEGER NOT NULL, " +
+                    "`completedAt` INTEGER, " +
+                    "`status` TEXT NOT NULL DEFAULT 'IN_PROGRESS', " +
+                    "`completedSteps` INTEGER NOT NULL DEFAULT 0, " +
+                    "`skippedSteps` INTEGER NOT NULL DEFAULT 0, " +
+                    "`totalSteps` INTEGER NOT NULL, " +
+                    "`notes` TEXT NOT NULL DEFAULT '', " +
+                    "FOREIGN KEY(`routineId`) REFERENCES `grooming_routine`(`id`) " +
+                    "ON UPDATE NO ACTION ON DELETE SET NULL)",
+            )
+            db.execSQL(
+                "CREATE UNIQUE INDEX IF NOT EXISTS " +
+                    "`index_grooming_log_routineId_dayKey_attempt` " +
+                    "ON `grooming_log` (`routineId`, `dayKey`, `attempt`)",
+            )
+            db.execSQL(
+                "CREATE INDEX IF NOT EXISTS `index_grooming_log_dayKey` " +
+                    "ON `grooming_log` (`dayKey`)",
+            )
+            db.execSQL(
+                "CREATE INDEX IF NOT EXISTS `index_grooming_log_startedAt` " +
+                    "ON `grooming_log` (`startedAt`)",
+            )
+
+            db.execSQL(
+                "CREATE TABLE IF NOT EXISTS `grooming_step_log` (" +
+                    "`id` INTEGER PRIMARY KEY AUTOINCREMENT NOT NULL, " +
+                    "`logId` INTEGER NOT NULL, " +
+                    "`stepId` INTEGER, " +
+                    "`position` INTEGER NOT NULL, " +
+                    "`title` TEXT NOT NULL, " +
+                    "`category` TEXT NOT NULL, " +
+                    "`targetDurationSec` INTEGER, " +
+                    "`outcome` TEXT NOT NULL, " +
+                    "`elapsedSec` INTEGER, " +
+                    "`recordedAt` INTEGER NOT NULL, " +
+                    "FOREIGN KEY(`logId`) REFERENCES `grooming_log`(`id`) " +
+                    "ON UPDATE NO ACTION ON DELETE CASCADE, " +
+                    "FOREIGN KEY(`stepId`) REFERENCES `grooming_routine_step`(`id`) " +
+                    "ON UPDATE NO ACTION ON DELETE SET NULL)",
+            )
+            db.execSQL(
+                "CREATE UNIQUE INDEX IF NOT EXISTS " +
+                    "`index_grooming_step_log_logId_position` " +
+                    "ON `grooming_step_log` (`logId`, `position`)",
+            )
+            db.execSQL(
+                "CREATE INDEX IF NOT EXISTS `index_grooming_step_log_stepId` " +
+                    "ON `grooming_step_log` (`stepId`)",
+            )
+
+            // Seed default grooming preferences
+            db.execSQL(
+                "INSERT OR IGNORE INTO `grooming_preferences` (`id`, `routineFrequencyDays`, `updatedAt`) " +
+                    "VALUES (1, 1, ?)",
+                arrayOf(System.currentTimeMillis()),
+            )
+
+            // Seed built-in grooming routine
+            seedDefaultGroomingRoutine(db)
+        }
+
+        private fun seedDefaultGroomingRoutine(db: SupportSQLiteDatabase, now: Long = System.currentTimeMillis()) {
+            // Insert the built-in routine
+            db.execSQL(
+                "INSERT OR IGNORE INTO `grooming_routine` " +
+                    "(`seedKey`, `name`, `description`, `isActive`, `sortOrder`, `createdAt`, `updatedAt`) " +
+                    "VALUES (?, ?, ?, 1, 0, ?, ?)",
+                arrayOf(
+                    "daily-essentials",
+                    "Daily Essentials",
+                    "Core grooming steps for daily maintenance",
+                    now,
+                    now,
+                ),
+            )
+
+            // Get the routine ID
+            val routineId = db.query(
+                "SELECT `id` FROM `grooming_routine` WHERE `seedKey` = 'daily-essentials' LIMIT 1",
+            ).use { cursor ->
+                if (!cursor.moveToFirst()) return
+                cursor.getLong(0)
+            }
+
+            // Seed steps for the routine
+            val steps = listOf(
+                listOf("Brush Teeth", "Brush for 2 minutes with fluoride toothpaste", "ORAL_CARE", 120),
+                listOf("Floss", "Floss between all teeth", "ORAL_CARE", 60),
+                listOf("Wash Face", "Cleanse with gentle face wash", "FACE", 30),
+                listOf("Apply Moisturizer", "Apply facial moisturizer", "FACE", 15),
+                listOf("Apply Sunscreen", "SPF 30+ for daytime protection", "SKIN", 30),
+                listOf("Shower", "Cleanse body thoroughly", "HYGIENE", 300),
+                listOf("Apply Body Lotion", "Moisturize after shower", "BODY", 30),
+                listOf("Brush Hair", "Detangle and style", "HAIR", 60),
+            )
+
+            steps.forEachIndexed { index, step ->
+                db.execSQL(
+                    "INSERT OR IGNORE INTO `grooming_routine_step` " +
+                        "(`routineId`, `title`, `instructions`, `category`, `targetDurationSec`, `position`, `isEnabled`, `isSeeded`) " +
+                        "VALUES (?, ?, ?, ?, ?, ?, 1, 1)",
+                    arrayOf<Any?>(
+                        routineId,
+                        step[0],
+                        step[1],
+                        step[2],
+                        step[3],
+                        index,
+                    ),
+                )
+            }
+        }
+    }
 }

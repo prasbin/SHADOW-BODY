@@ -53,6 +53,7 @@ fun DashboardScreen(
     onOpenActivation: () -> Unit = {},
     onOpenNutrition: () -> Unit = {},
     onOpenProgression: () -> Unit = {},
+    onOpenGrooming: () -> Unit = {},
     viewModel: DashboardViewModel = viewModel(),
 ) {
     val state by viewModel.uiState.collectAsState()
@@ -234,6 +235,14 @@ fun DashboardScreen(
                         statusOverride = "OPEN",
                         statusAvailable = true,
                         onClick = onOpenProgression,
+                    )
+                } else if (module.id == "grooming") {
+                    // Phase 8: grooming is live and reachable.
+                    ModuleRow(
+                        module = module,
+                        statusOverride = "OPEN",
+                        statusAvailable = true,
+                        onClick = onOpenGrooming,
                     )
                 } else {
                     ModuleRow(module = module)

@@ -24,6 +24,9 @@ import androidx.room.TypeConverters
  *   (see [Migrations.MIGRATION_5_6]).
  * - v7: + progression system — [XpTransaction], [Attribute], [Streak], [Achievement]
  *   (see [Migrations.MIGRATION_6_7]).
+ * - v8: + grooming MVP — [GroomingPreferences], [GroomingRoutine], [GroomingRoutineStep],
+ *   [GroomingLog], [GroomingStepLog]
+ *   (see [Migrations.MIGRATION_7_8]).
  *
  * Every version bump ships an explicit Migration; destructive fallback is
  * never enabled. Schemas are exported to `app/schemas` and committed.
@@ -56,6 +59,11 @@ import androidx.room.TypeConverters
         Attribute::class,
         Streak::class,
         Achievement::class,
+        GroomingPreferences::class,
+        GroomingRoutine::class,
+        GroomingRoutineStep::class,
+        GroomingLog::class,
+        GroomingStepLog::class,
     ],
     version = ShadowBodyDatabase.VERSION,
     exportSchema = true,
@@ -84,9 +92,13 @@ abstract class ShadowBodyDatabase : RoomDatabase() {
     abstract fun attributeDao(): AttributeDao
     abstract fun streakDao(): StreakDao
     abstract fun achievementDao(): AchievementDao
+    abstract fun groomingPreferencesDao(): GroomingPreferencesDao
+    abstract fun groomingRoutineDao(): GroomingRoutineDao
+    abstract fun groomingRoutineStepDao(): GroomingRoutineStepDao
+    abstract fun groomingLogDao(): GroomingLogDao
 
     companion object {
-        const val VERSION = 7
+        const val VERSION = 8
         const val NAME = "shadow_body.db"
 
         @Volatile
@@ -106,6 +118,7 @@ abstract class ShadowBodyDatabase : RoomDatabase() {
                         Migrations.MIGRATION_4_5,
                         Migrations.MIGRATION_5_6,
                         Migrations.MIGRATION_6_7,
+                        Migrations.MIGRATION_7_8,
                     )
                     .build().also { instance = it }
             }

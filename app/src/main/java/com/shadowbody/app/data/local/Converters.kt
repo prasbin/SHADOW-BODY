@@ -7,6 +7,7 @@ import com.shadowbody.app.domain.model.ExerciseCategory
 import com.shadowbody.app.domain.model.FitnessLevel
 import com.shadowbody.app.domain.model.Goal
 import com.shadowbody.app.domain.model.MorningLogStatus
+import com.shadowbody.app.domain.model.GroomingStepCategory
 import com.shadowbody.app.domain.model.MorningStepCategory
 import com.shadowbody.app.domain.model.MorningStepOutcome
 import com.shadowbody.app.domain.model.MuscleGroup
@@ -127,4 +128,13 @@ class Converters {
     @TypeConverter
     fun stringToMorningStepOutcome(raw: String): MorningStepOutcome =
         runCatching { MorningStepOutcome.valueOf(raw) }.getOrDefault(MorningStepOutcome.SKIPPED)
+
+    // --- Grooming enums (Phase 8). Same unknown-token policy. ---
+
+    @TypeConverter
+    fun groomingStepCategoryToString(value: GroomingStepCategory): String = value.name
+
+    @TypeConverter
+    fun stringToGroomingStepCategory(raw: String): GroomingStepCategory =
+        runCatching { GroomingStepCategory.valueOf(raw) }.getOrDefault(GroomingStepCategory.OTHER)
 }
