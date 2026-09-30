@@ -15,7 +15,7 @@ import kotlinx.coroutines.launch
 
 data class SettingsUiState(
     val themeMode: ThemeMode = ThemeMode.SYSTEM,
-    val versionName: String = "0.1.0-phase1",
+    val versionName: String = "1.0.0",
     val offlineReady: Boolean = true,
 )
 
