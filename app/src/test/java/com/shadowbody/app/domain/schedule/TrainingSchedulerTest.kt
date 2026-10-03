@@ -69,14 +69,16 @@ class TrainingSchedulerTest {
     }
 
     @Test
-    fun isTrainingDayReturnsTrueWhenTrainingDaysEmpty() {
+    fun emptyTrainingDaysMeansEveryDayExceptSaturdayIsTrainingDay() {
         assertTrue(TrainingScheduler.isTrainingDay(1, emptySet()))
         assertTrue(TrainingScheduler.isTrainingDay(6, emptySet()))
+        assertFalse(TrainingScheduler.isTrainingDay(7, emptySet()))
     }
 
     @Test
-    fun sundayIsDay7() {
-        assertTrue(TrainingScheduler.isTrainingDay(7, setOf(7)))
-        assertFalse(TrainingScheduler.isTrainingDay(1, setOf(7)))
+    fun saturdayIsAlwaysRestDay() {
+        assertFalse(TrainingScheduler.isTrainingDay(7, setOf(7)))
+        assertFalse(TrainingScheduler.isTrainingDay(7, setOf(1, 2, 3, 4, 5, 6, 7)))
+        assertTrue(TrainingScheduler.isTrainingDay(1, setOf(1)))
     }
 }

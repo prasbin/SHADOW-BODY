@@ -78,10 +78,10 @@
 
 ## 7. SATURDAY RECOVERY RULE
 
-- [ ] Saturday = designated weekly recovery/rest day
-- [ ] No normal 6:00 AM workout wake-up on Saturday
-- [ ] No forced brutal workout on Saturday
-- [ ] Recovery guidance may still be shown (hydration, sleep, mobility, grooming, nutrition)
+- [x] Saturday = designated weekly recovery/rest day
+- [x] No normal 6:00 AM workout wake-up on Saturday
+- [x] No forced brutal workout on Saturday
+- [x] Recovery guidance may still be shown (hydration, sleep, mobility, grooming, nutrition)
 - [ ] Saturday is recovery day, not disabled-app day
 
 **Status: NOT SATISFIED — requires future implementation**

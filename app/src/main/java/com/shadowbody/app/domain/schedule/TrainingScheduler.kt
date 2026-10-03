@@ -51,6 +51,7 @@ object TrainingScheduler {
     }
 
     fun isTrainingDay(todayDayOfWeek: Int, trainingDays: Set<Int>): Boolean {
+        if (todayDayOfWeek == 7) return false
         if (trainingDays.isEmpty()) return true
         return todayDayOfWeek in trainingDays
     }
