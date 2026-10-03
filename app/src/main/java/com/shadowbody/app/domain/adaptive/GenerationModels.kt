@@ -17,6 +17,10 @@ data class GenerationContext(
     val equipment: Set<Equipment>,
     val goals: Set<Goal> = emptySet(),
     val fitnessLevel: FitnessLevel? = null,
+    val heightCm: Double? = null,
+    val weightKg: Double? = null,
+    val age: Int? = null,
+    val aggressionLevel: Int = 3,
     /** Planned session length; null when no profile exists yet. */
     val sessionMinutes: Int? = null,
     /** ISO day numbers (1 = Monday) the user wants to train. */

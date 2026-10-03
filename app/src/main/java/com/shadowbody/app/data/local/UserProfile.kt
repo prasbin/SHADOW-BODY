@@ -26,6 +26,8 @@ data class UserProfile(
     val trainingDays: Set<Int>,
     /** Planned minutes per session; one of [ALLOWED_SESSION_MINUTES]. */
     val sessionMinutes: Int,
+    /** User's preferred intensity/aggression level (1-5, where 5 is most aggressive). */
+    val aggressionLevel: Int = 3,
     val updatedAt: Long = System.currentTimeMillis(),
 ) {
     companion object {

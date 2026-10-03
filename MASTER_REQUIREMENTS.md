@@ -54,10 +54,10 @@
 
 ## 5. "BRUTAL" TRAINING REQUIREMENT
 
-- [ ] High-intensity and challenging within safety limits
-- [ ] NOT intentionally dangerous or injury-inducing
-- [ ] Respects fitness level, recent workload, fatigue/readiness, missed sessions, recovery
-- [ ] User-configurable aggression/intensity level
+- [x] High-intensity and challenging within safety limits
+- [x] NOT intentionally dangerous or injury-inducing
+- [x] Respects fitness level, recent workload, fatigue/readiness, missed sessions, recovery
+- [x] User-configurable aggression/intensity level (1-5, stored in user_profile)
 - [ ] System explains why today's workout has particular intensity
 - [ ] Adapts when fatigue/readiness indicates reduced load
 

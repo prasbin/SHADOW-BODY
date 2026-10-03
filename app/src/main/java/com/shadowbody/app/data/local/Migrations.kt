@@ -857,4 +857,16 @@ object Migrations {
             )
         }
     }
+
+    /**
+     * v9 -> v10: adds aggression_level column to user_profile.
+     * Purely additive: preserves all Phase 1-9 data.
+     */
+    val MIGRATION_9_10 = object : Migration(9, 10) {
+        override fun migrate(db: SupportSQLiteDatabase) {
+            db.execSQL(
+                "ALTER TABLE `user_profile` ADD COLUMN `aggressionLevel` INTEGER NOT NULL DEFAULT 3",
+            )
+        }
+    }
 }

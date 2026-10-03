@@ -73,17 +73,52 @@ object WorkoutGenerator {
             slot to (decision to previous)
         }
 
+        val aggressionMultiplier = when (context.aggressionLevel) {
+            1 -> 0.7
+            2 -> 0.85
+            3 -> 1.0
+            4 -> 1.15
+            5 -> 1.3
+            else -> 1.0
+        }
+
+        val fitnessMultiplier = when (context.fitnessLevel) {
+            com.shadowbody.app.domain.model.FitnessLevel.BEGINNER -> 0.8
+            com.shadowbody.app.domain.model.FitnessLevel.INTERMEDIATE -> 1.0
+            com.shadowbody.app.domain.model.FitnessLevel.ADVANCED -> 1.2
+            else -> 1.0
+        }
+
+        val bmi = context.heightCm?.let { h -> context.weightKg?.let { w -> w / ((h / 100) * (h / 100)) } }
+        val bmiAdjustment = when {
+            bmi == null -> 1.0
+            bmi < 18.5 -> 0.9
+            bmi > 30.0 -> 0.85
+            else -> 1.0
+        }
+
+        val ageAdjustment = context.age?.let { a ->
+            when {
+                a < 18 -> 0.85
+                a > 55 -> 0.9
+                else -> 1.0
+            }
+        } ?: 1.0
+
+        val intensityMultiplier = aggressionMultiplier * fitnessMultiplier * bmiAdjustment * ageAdjustment
+
         val kept = enforceDuration(decisions, context.sessionMinutes)
         if (kept.isEmpty()) return null
 
         val exercises = kept.mapIndexed { index, entry ->
             val (slot, pair) = entry
             val (decision, previous) = pair
+            val adjustedSets = (decision.sets * intensityMultiplier).toInt().coerceIn(1, 10)
             GeneratedExercise(
                 exerciseId = slot.exerciseId,
                 exerciseName = slot.exerciseName,
                 position = index,
-                sets = decision.sets,
+                sets = adjustedSets,
                 reps = decision.reps,
                 durationSec = decision.durationSec,
                 restSec = decision.restSec,
@@ -97,11 +132,30 @@ object WorkoutGenerator {
         val maintained = exercises.size - progressed - reduced
         val minutes = estimateMinutes(exercises)
 
+        val intensityLabel = when {
+            intensityMultiplier >= 1.2 -> "HIGH"
+            intensityMultiplier >= 0.9 -> "MODERATE"
+            else -> "REDUCED"
+        }
+
+        val intensityReason = buildString {
+            append("Intensity: $intensityLabel. ")
+            append("Aggression: ${context.aggressionLevel}/5. ")
+            context.fitnessLevel?.let { append("Fitness: ${it.name}. ") }
+            bmi?.let { append("BMI: ${"%.1f".format(it)}. ") }
+            context.age?.let { append("Age: $it. ") }
+            if (context.readiness != null) {
+                if (context.readiness.fatigue >= 4) append("High fatigue reduces intensity. ")
+                if (context.readiness.soreness >= 4) append("High soreness reduces intensity. ")
+            }
+            if (context.missedSessions >= 2) append("Missed sessions reduce volume. ")
+        }
+
         return GeneratedWorkout(
             name = plan?.name?.let { "ADAPTIVE · ${it.uppercase()}" } ?: "ADAPTIVE SESSION",
             sourcePlanId = plan?.id,
             estimatedMinutes = minutes,
-            summary = buildSummary(plan, progressed, maintained, reduced, weeklyMet, context),
+            summary = buildSummary(plan, progressed, maintained, reduced, weeklyMet, context) + " " + intensityReason,
             exercises = exercises,
             progressed = progressed,
             maintained = maintained,
