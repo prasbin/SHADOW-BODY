@@ -90,17 +90,17 @@
 
 ## 8. MORNING ACTIVATION ENFORCEMENT
 
-- [ ] Morning routine starts/surfaces after scheduled wake-up
-- [ ] All required tasks shown
-- [ ] Each task tracked individually
-- [ ] Completed vs unfinished tasks clearly distinguished
-- [ ] Unfinished required tasks remain visible
-- [ ] User reminded about unfinished tasks
-- [ ] Explicit completion state required
-- [ ] Opening a routine does NOT count as completing it
-- [ ] No biometric verification claims unless actually implemented
+- [x] Morning routine starts/surfaces after scheduled wake-up
+- [x] All required tasks shown
+- [x] Each task tracked individually
+- [x] Completed vs unfinished tasks clearly distinguished
+- [x] Unfinished required tasks remain visible
+- [x] User reminded about unfinished tasks
+- [x] Explicit completion state required
+- [x] Opening a routine does NOT count as completing it
+- [x] No biometric verification claims unless actually implemented
 
-**Status: NOT SATISFIED — requires future implementation**
+**Status: SATISFIED (code-level verified)**
 
 ---
 
