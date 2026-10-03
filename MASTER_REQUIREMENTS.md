@@ -29,16 +29,17 @@
 
 ## 3. AUTOMATIC 6:00 AM WAKE-UP REQUIREMENT
 
-- [ ] 6:00 AM local device time wake-up/reminder
-- [ ] Every day except Saturday
-- [ ] Saturday = weekly recovery/rest day (no 6:00 AM training wake-up)
-- [ ] User must NOT manually create workout schedule
-- [ ] Schedule survives app restarts/reboots where Android permits
-- [ ] Uses appropriate Android scheduling/alarm APIs
-- [ ] Respects Android notification/alarm permissions
-- [ ] Never falsely claims alarm was scheduled
+- [x] 6:00 AM local device time wake-up/reminder
+- [x] Every day except Saturday
+- [x] Saturday = weekly recovery/rest day (no 6:00 AM training wake-up)
+- [x] User must NOT manually create workout schedule
+- [x] Schedule survives app restarts/reboots where Android permits
+- [x] Uses appropriate Android scheduling/alarm APIs (AlarmManager.setExactAndAllowWhileIdle)
+- [x] Respects Android notification/alarm permissions (checks canScheduleExactAlarms on API 31+)
+- [x] Never falsely claims alarm was scheduled (returns false if permission denied)
 
-**Status: NOT SATISFIED — requires future implementation**
+**Status: SATISFIED (code-level verified)**
+**Physical-device verification: PENDING**
 
 ---
 

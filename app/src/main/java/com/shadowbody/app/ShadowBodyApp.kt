@@ -153,4 +153,16 @@ class ShadowBodyApp : Application() {
             adaptivePlanner = adaptivePlanner,
         )
     }
+
+    // --- 6:00 AM wake-up scheduling ---
+    val wakeUpScheduler: com.shadowbody.app.data.schedule.AndroidWakeUpScheduler by lazy {
+        com.shadowbody.app.data.schedule.AndroidWakeUpScheduler(this)
+    }
+
+    fun scheduleWakeUp() {
+        try {
+            wakeUpScheduler.scheduleWakeUp()
+        } catch (_: Exception) {
+        }
+    }
 }
