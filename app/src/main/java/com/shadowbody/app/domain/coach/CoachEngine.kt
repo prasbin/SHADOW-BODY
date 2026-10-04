@@ -37,4 +37,5 @@ data class CoachProfile(
     val wardrobeItemCount: Int = 0,
     val recentMissedWorkouts: Int = 0,
     val dayOfWeek: Int = 1,
+    val busynessLevel: String = "NORMAL",
 )

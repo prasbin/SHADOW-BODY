@@ -121,13 +121,20 @@ class LocalDeterministicCoachEngine : CoachEngine {
         }
 
         if (profile.wardrobeItemCount > 0) {
+            val wardrobePriority = when (profile.busynessLevel) {
+                "LIGHT" -> 35
+                "NORMAL" -> 30
+                "BUSY" -> 20
+                "VERY_BUSY" -> 10
+                else -> 30
+            }
             recommendations.add(
                 CoachRecommendation(
                     id = "outfit_suggestion",
                     title = "PREPARE OUTFIT",
                     reason = "You have ${profile.wardrobeItemCount} wardrobe items available for outfit suggestions.",
                     category = "WARDROBE",
-                    priority = 30,
+                    priority = wardrobePriority,
                     actionRoute = "outfit_generator",
                 )
             )
