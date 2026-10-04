@@ -106,20 +106,20 @@
 
 ## 9. DAILY FACE SCAN / GROOMING INTELLIGENCE
 
-- [ ] Daily face/selfie image via Android camera/gallery
-- [ ] Non-medical grooming/self-care suggestions
-- [ ] Output: "What should I apply/do today?"
-- [ ] Categories: cleansing, moisturizing, sunscreen, basic grooming, beard/hair care
-- [ ] NOT medical diagnostic system
-- [ ] Does NOT diagnose acne, infection, disease, skin conditions
-- [ ] Does NOT infer medical deficiencies or prescribe medication
-- [ ] Conservative home/self-care guidance only
-- [ ] Recommends professional care when appropriate
-- [ ] Explains: what observed, what recommended, why, limitations
-- [ ] Provider abstraction for any external AI
-- [ ] Core app usable without paid cloud AI
+- [x] Daily face/selfie image via Android camera/gallery
+- [x] Non-medical grooming/self-care suggestions
+- [x] Output: "What should I apply/do today?"
+- [x] Categories: cleansing, moisturizing, sunscreen, basic grooming, beard/hair care
+- [x] NOT medical diagnostic system
+- [x] Does NOT diagnose acne, infection, disease, skin conditions
+- [x] Does NOT infer medical deficiencies or prescribe medication
+- [x] Conservative home/self-care guidance only
+- [x] Recommends professional care when appropriate
+- [x] Explains: what observed, what recommended, why, limitations
+- [x] Provider abstraction for any external AI
+- [x] Core app usable without paid cloud AI
 
-**Status: NOT SATISFIED — requires future implementation**
+**Status: SATISFIED (code-level verified)**
 
 ---
 
