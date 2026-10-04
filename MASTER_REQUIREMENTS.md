@@ -203,14 +203,14 @@
 
 ## 16. SMART NOTIFICATIONS
 
-- [ ] Useful Android notifications
-- [ ] Categories: 6:00 AM wake-up, workout reminder, unfinished morning task, hydration, meal/logging, recovery/rest, grooming, wardrobe preparation
-- [ ] Local-first, deterministic where possible
-- [ ] Permission-aware, non-spammy, context-aware
-- [ ] Cancelable/re-schedulable
-- [ ] Resilient across app restarts where Android permits
+- [x] Useful Android notifications
+- [x] Categories: 6:00 AM wake-up, workout reminder, unfinished morning task, hydration, meal/logging, recovery/rest, grooming, wardrobe preparation
+- [x] Local-first, deterministic where possible
+- [x] Permission-aware, non-spammy, context-aware
+- [x] Cancelable/re-schedulable
+- [x] Resilient across app restarts where Android permits
 
-**Status: NOT SATISFIED — requires future implementation**
+**Status: SATISFIED (code-level verified)**
 
 ---
 
