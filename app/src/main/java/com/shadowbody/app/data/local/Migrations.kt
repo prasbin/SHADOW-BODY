@@ -869,4 +869,28 @@ object Migrations {
             )
         }
     }
+
+    /**
+     * v10 -> v11: creates the wardrobe_photo_combination table.
+     * Purely additive: preserves all Phase 1-10 data.
+     */
+    val MIGRATION_10_11 = object : Migration(10, 11) {
+        override fun migrate(db: SupportSQLiteDatabase) {
+            db.execSQL(
+                "CREATE TABLE IF NOT EXISTS `wardrobe_photo_combination` (" +
+                    "`id` INTEGER PRIMARY KEY AUTOINCREMENT NOT NULL, " +
+                    "`position` INTEGER NOT NULL, " +
+                    "`label` TEXT NOT NULL, " +
+                    "`photoPath` TEXT, " +
+                    "`notes` TEXT NOT NULL DEFAULT '', " +
+                    "`createdAt` INTEGER NOT NULL DEFAULT 0, " +
+                    "`updatedAt` INTEGER NOT NULL DEFAULT 0)",
+            )
+            db.execSQL(
+                "CREATE UNIQUE INDEX IF NOT EXISTS " +
+                    "`index_wardrobe_photo_combination_position` " +
+                    "ON `wardrobe_photo_combination` (`position`)",
+            )
+        }
+    }
 }

@@ -68,6 +68,7 @@ import androidx.room.TypeConverters
         GroomingStepLog::class,
         WardrobeItem::class,
         OutfitRecord::class,
+        WardrobePhotoCombination::class,
     ],
     version = ShadowBodyDatabase.VERSION,
     exportSchema = true,
@@ -102,9 +103,10 @@ abstract class ShadowBodyDatabase : RoomDatabase() {
     abstract fun groomingLogDao(): GroomingLogDao
     abstract fun wardrobeItemDao(): WardrobeItemDao
     abstract fun outfitRecordDao(): OutfitRecordDao
+    abstract fun wardrobePhotoCombinationDao(): WardrobePhotoCombinationDao
 
     companion object {
-        const val VERSION = 10
+        const val VERSION = 11
         const val NAME = "shadow_body.db"
 
         @Volatile
@@ -127,6 +129,7 @@ abstract class ShadowBodyDatabase : RoomDatabase() {
                         Migrations.MIGRATION_7_8,
                         Migrations.MIGRATION_8_9,
                         Migrations.MIGRATION_9_10,
+                        Migrations.MIGRATION_10_11,
                     )
                     .build().also { instance = it }
             }

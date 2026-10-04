@@ -140,13 +140,13 @@
 
 ## 11. WARDROBE PHOTO INPUT
 
-- [ ] Request 3 clothing combinations + shoes as photos
-- [ ] Camera/gallery input for outfit combinations
+- [x] Request 3 clothing combinations + shoes as photos
+- [x] Camera/gallery input for outfit combinations
 - [ ] Analyze combinations based on: available clothing, colors, compatibility, shoes, occasion, preferences
 - [ ] System explains recommendation
-- [ ] Does NOT pretend image analysis occurred if it did not run
+- [x] Does NOT pretend image analysis occurred if it did not run
 
-**Status: NOT SATISFIED — requires future implementation**
+**Status: PARTIAL — photo input implemented, AI analysis deferred to Requirement 8**
 
 ---
 
