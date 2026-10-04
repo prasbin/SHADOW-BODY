@@ -18,6 +18,18 @@ class LocalDeterministicCoachEngine : CoachEngine {
             )
         }
 
+        if (profile.isSaturday()) {
+            recommendations.add(
+                CoachRecommendation(
+                    id = "saturday_recovery",
+                    title = "RECOVER",
+                    reason = "Today is Saturday recovery. Keep training paused and focus on recovery.",
+                    category = "RECOVERY",
+                    priority = 95,
+                )
+            )
+        }
+
         if (profile.hasReadinessToday && profile.fatigue >= 4) {
             recommendations.add(
                 CoachRecommendation(
@@ -44,12 +56,12 @@ class LocalDeterministicCoachEngine : CoachEngine {
             )
         }
 
-        if (profile.isTrainingDay() && !profile.todayWorkoutCompleted && !profile.todayWorkoutInProgress) {
+        if (profile.isTrainingDay() && !profile.isSaturday() && !profile.todayWorkoutCompleted && !profile.todayWorkoutInProgress) {
             recommendations.add(
                 CoachRecommendation(
                     id = "workout_today",
-                    title = "Complete your planned workout",
-                    reason = "Today is a scheduled training day and no workout has been completed yet.",
+                    title = "TRAIN",
+                    reason = "Your scheduled training session is ready.",
                     category = "WORKOUT",
                     priority = 80,
                     actionRoute = "workout",
@@ -73,7 +85,7 @@ class LocalDeterministicCoachEngine : CoachEngine {
             recommendations.add(
                 CoachRecommendation(
                     id = "hydration_low",
-                    title = "Increase hydration",
+                    title = "DRINK WATER",
                     reason = "Current hydration (${profile.hydrationMl}ml) is below half of your daily goal (${profile.hydrationGoalMl}ml).",
                     category = "NUTRITION",
                     priority = 70,
@@ -86,7 +98,7 @@ class LocalDeterministicCoachEngine : CoachEngine {
             recommendations.add(
                 CoachRecommendation(
                     id = "morning_pending",
-                    title = "Start your morning activation",
+                    title = "COMPLETE MORNING ROUTINE",
                     reason = "Your morning activation routine has not been started today.",
                     category = "MORNING",
                     priority = 60,
@@ -99,7 +111,7 @@ class LocalDeterministicCoachEngine : CoachEngine {
             recommendations.add(
                 CoachRecommendation(
                     id = "grooming_pending",
-                    title = "Complete your grooming routine",
+                    title = "CHECK GROOMING",
                     reason = "Your daily grooming routine has not been started today.",
                     category = "GROOMING",
                     priority = 50,
@@ -112,7 +124,7 @@ class LocalDeterministicCoachEngine : CoachEngine {
             recommendations.add(
                 CoachRecommendation(
                     id = "outfit_suggestion",
-                    title = "Generate an outfit suggestion",
+                    title = "PREPARE OUTFIT",
                     reason = "You have ${profile.wardrobeItemCount} wardrobe items available for outfit suggestions.",
                     category = "WARDROBE",
                     priority = 30,
@@ -159,5 +171,9 @@ class LocalDeterministicCoachEngine : CoachEngine {
     private fun CoachProfile.isTrainingDay(): Boolean {
         if (trainingDays.isEmpty()) return true
         return dayOfWeek in trainingDays
+    }
+
+    private fun CoachProfile.isSaturday(): Boolean {
+        return dayOfWeek == 7
     }
 }
