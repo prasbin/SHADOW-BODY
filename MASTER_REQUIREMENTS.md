@@ -125,16 +125,16 @@
 
 ## 10. DAILY FACE-SCAN PRIVACY
 
-- [ ] Face/selfie images stored locally by default
-- [ ] No silent image uploads
-- [ ] No transmission to external services without explicit consent
-- [ ] Clear communication when external AI processing required
-- [ ] Users can remove stored images/data
-- [ ] No unnecessary long-term retention
-- [ ] No identity recognition from face images
-- [ ] No identification of user or other people from images
+- [x] Face/selfie images stored locally by default
+- [x] No silent image uploads
+- [x] No transmission to external services without explicit consent
+- [x] Clear communication when external AI processing required
+- [x] Users can remove stored images/data
+- [x] No unnecessary long-term retention
+- [x] No identity recognition from face images
+- [x] No identification of user or other people from images
 
-**Status: NOT SATISFIED — requires future implementation**
+**Status: SATISFIED (code-level verified)**
 
 ---
 
