@@ -47,6 +47,7 @@ fun WardrobeScreen(
     onAddItem: () -> Unit,
     onEditItem: (Long) -> Unit,
     onOpenOutfitGenerator: () -> Unit,
+    onOpenPhotoInput: () -> Unit = {},
 ) {
     val uiItems by viewModel.filteredItems.collectAsState()
     val searchQuery by viewModel.searchQuery.collectAsState()
@@ -74,6 +75,12 @@ fun WardrobeScreen(
                     }
                     IconButton(onClick = onAddItem, modifier = Modifier.testTag("addItemButton")) {
                         Icon(Icons.Filled.Add, contentDescription = "Add Item")
+                    }
+                    IconButton(
+                        onClick = onOpenPhotoInput,
+                        modifier = Modifier.testTag("photoInputButton"),
+                    ) {
+                        Icon(Icons.Filled.Add, contentDescription = "Photo Input")
                     }
                 },
                 colors = TopAppBarDefaults.topAppBarColors(

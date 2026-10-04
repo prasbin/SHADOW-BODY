@@ -53,6 +53,8 @@ import com.shadowbody.app.ui.wardrobe.WardrobeScreen
 import com.shadowbody.app.ui.wardrobe.WardrobeItemEditorScreen
 import com.shadowbody.app.ui.wardrobe.OutfitViewModel
 import com.shadowbody.app.ui.wardrobe.OutfitGeneratorScreen
+import com.shadowbody.app.ui.wardrobe.WardrobePhotoInputViewModel
+import com.shadowbody.app.ui.wardrobe.WardrobePhotoInputScreen
 import com.shadowbody.app.ui.coach.CoachViewModel
 import com.shadowbody.app.ui.coach.CoachScreen
 import com.shadowbody.app.ui.progression.ProgressionScreen
@@ -419,6 +421,7 @@ fun ShadowBodyNavHost() {
                 onAddItem = { navController.navigate(Routes.wardrobeItemEditor()) },
                 onEditItem = { itemId -> navController.navigate(Routes.wardrobeItemEditor(itemId)) },
                 onOpenOutfitGenerator = { navController.navigate(Routes.OUTFIT_GENERATOR) },
+                onOpenPhotoInput = { navController.navigate(Routes.WARDROBE_PHOTO_INPUT) },
             )
         }
         composable(
@@ -444,6 +447,16 @@ fun ShadowBodyNavHost() {
             OutfitGeneratorScreen(
                 viewModel = vm,
                 onBack = { navController.popBackStack() },
+            )
+        }
+        composable(Routes.WARDROBE_PHOTO_INPUT) {
+            val vm: WardrobePhotoInputViewModel = viewModel(factory = WardrobePhotoInputViewModel.Factory(app))
+            WardrobePhotoInputScreen(
+                viewModel = vm,
+                onBack = { navController.popBackStack() },
+                onAddPhoto = { position ->
+                    vm.addPhoto(position, "/local/photo_${position}.jpg")
+                },
             )
         }
         composable(Routes.COACH) {

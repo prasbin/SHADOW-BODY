@@ -27,6 +27,7 @@ object Routes {
     const val WARDROBE = "wardrobe"
     const val WARDROBE_ITEM_EDITOR = "wardrobe_item?itemId={itemId}"
     const val OUTFIT_GENERATOR = "outfit_generator"
+    const val WARDROBE_PHOTO_INPUT = "wardrobe_photo_input"
     const val COACH = "coach"
 
     /** Every route registered in the NavHost. Used by tests to catch typos. */
@@ -36,7 +37,7 @@ object Routes {
         ADAPTIVE, MORNING, MORNING_RUN, MORNING_EDITOR, NUTRITION, NUTRITION_HISTORY, NUTRITION_GOAL,
         PROGRESSION, PROGRESSION_HISTORY,
         GROOMING, GROOMING_RUN, GROOMING_EDITOR,
-        WARDROBE, WARDROBE_ITEM_EDITOR, OUTFIT_GENERATOR,
+        WARDROBE, WARDROBE_ITEM_EDITOR, OUTFIT_GENERATOR, WARDROBE_PHOTO_INPUT,
         COACH,
     )
 

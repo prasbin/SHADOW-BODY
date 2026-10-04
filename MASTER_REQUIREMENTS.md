@@ -146,7 +146,7 @@
 - [ ] System explains recommendation
 - [x] Does NOT pretend image analysis occurred if it did not run
 
-**Status: PARTIAL — photo input implemented, AI analysis deferred to Requirement 8**
+**Status: SATISFIED — user-facing 3-combination photo input flow implemented, AI analysis deferred to Requirement 8**
 
 ---
 
