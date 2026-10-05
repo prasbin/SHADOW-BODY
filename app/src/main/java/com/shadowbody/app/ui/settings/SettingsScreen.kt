@@ -26,11 +26,11 @@ import androidx.compose.ui.Modifier
 import androidx.compose.ui.semantics.Role
 import com.shadowbody.app.data.preferences.ThemeMode
 import com.shadowbody.app.ui.components.SectionHeader
-import com.shadowbody.app.ui.components.SystemPanel
+import com.shadowbody.app.ui.components.SystemCard
 import com.shadowbody.app.ui.theme.LocalShadowSpacing
 
 /**
- * Phase 1 settings: theme preference foundation + app/about info.
+ * System Config: theme preference + app info.
  * No account, no cloud, no unnecessary toggles.
  */
 @OptIn(ExperimentalMaterial3Api::class)
@@ -71,7 +71,7 @@ fun SettingsScreen(
         ) {
             SectionHeader(title = "Appearance")
 
-            SystemPanel {
+            SystemCard {
                 ThemeMode.entries.forEach { mode ->
                     Row(
                         modifier = Modifier
@@ -84,7 +84,7 @@ fun SettingsScreen(
                             .padding(vertical = spacing.xs),
                         verticalAlignment = Alignment.CenterVertically,
                     ) {
-                        RadioButton(
+                        androidx.compose.material3.RadioButton(
                             selected = uiState.themeMode == mode,
                             onClick = null,
                         )
@@ -107,25 +107,25 @@ fun SettingsScreen(
                     }
                 }
             }
+        }
 
-            SectionHeader(title = "About")
+        SectionHeader(title = "About")
 
-            SystemPanel {
-                AboutRow(label = "VERSION", value = uiState.versionName)
-                Spacer(modifier = Modifier.height(spacing.xs))
-                AboutRow(
-                    label = "MODE",
-                    value = if (uiState.offlineReady) "OFFLINE-FIRST · LOCAL" else "—",
-                )
-                Spacer(modifier = Modifier.height(spacing.xs))
-                Text(
-                    text = "SHADOW BODY is a personal fitness/wellness companion. " +
-                        "It does not provide medical diagnosis or treatment. " +
-                        "Consult a qualified professional for medical concerns.",
-                    style = MaterialTheme.typography.bodySmall,
-                    color = MaterialTheme.colorScheme.onSurfaceVariant,
-                )
-            }
+        SystemCard {
+            AboutRow(label = "VERSION", value = uiState.versionName)
+            Spacer(modifier = Modifier.height(spacing.xs))
+            AboutRow(
+                label = "MODE",
+                value = if (uiState.offlineReady) "OFFLINE-FIRST · LOCAL" else "—",
+            )
+            Spacer(modifier = Modifier.height(spacing.xs))
+            Text(
+                text = "SHADOW BODY is a personal fitness/wellness companion. " +
+                    "It does not provide medical diagnosis or treatment. " +
+                    "Consult a qualified professional for medical concerns.",
+                style = MaterialTheme.typography.bodySmall,
+                color = MaterialTheme.colorScheme.onSurfaceVariant,
+            )
         }
     }
 }

@@ -133,7 +133,7 @@ fun MorningRunScreen(
 
             if (run == null) {
                 item {
-                    SystemPanel(accentBorder = true) {
+                    SystemPanel(accent = true) {
                         Text(
                             text = "Loading run…",
                             style = MaterialTheme.typography.bodySmall,
@@ -255,7 +255,7 @@ fun MorningRunScreen(
 private fun ResultPanel(run: MorningRunDetail) {
     val spacing = LocalShadowSpacing.current
     val log = run.log
-    SystemPanel(accentBorder = true) {
+    SystemPanel(accent = true) {
         Text(
             text = "[ ${log.status.name} ]",
             style = MaterialTheme.typography.titleSmall,
@@ -319,7 +319,7 @@ private fun CurrentStepPanel(
     LaunchedEffect(timer) {
         onTimerChanged()
     }
-    SystemPanel(accentBorder = true) {
+    SystemPanel(accent = true) {
         Text(
             text = "STEP ${step.position + 1} · ${step.category.name}",
             style = MaterialTheme.typography.labelSmall,
@@ -475,3 +475,4 @@ internal fun formatSeconds(total: Int): String {
 }
 
 internal const val EXTRA_SECONDS = 30
+

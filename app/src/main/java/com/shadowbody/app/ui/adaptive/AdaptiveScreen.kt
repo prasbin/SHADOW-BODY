@@ -94,7 +94,7 @@ fun AdaptiveScreen(
 
             item {
                 if (!state.hasRecommendation) {
-                    SystemPanel(accentBorder = true) {
+                    SystemPanel(accent = true) {
                         Text(
                             text = "[ NO RECOMMENDATION ]",
                             style = MaterialTheme.typography.titleSmall,
@@ -285,7 +285,7 @@ private fun RecommendationPanel(
     onDismiss: () -> Unit,
 ) {
     val spacing = LocalShadowSpacing.current
-    SystemPanel(accentBorder = true) {
+    SystemPanel(accent = true) {
         Text(
             text = state.recommendationName,
             style = MaterialTheme.typography.titleMedium,
@@ -349,3 +349,4 @@ private fun RecommendationPanel(
         }
     }
 }
+

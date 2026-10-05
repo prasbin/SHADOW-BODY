@@ -37,7 +37,10 @@ import com.shadowbody.app.data.local.XpTransaction
 import com.shadowbody.app.domain.progression.ProgressionEngine.ProgressionSummary
 import com.shadowbody.app.ui.components.SectionHeader
 import com.shadowbody.app.ui.components.StatCard
-import com.shadowbody.app.ui.components.SystemPanel
+import com.shadowbody.app.ui.components.SystemCard
+import com.shadowbody.app.ui.components.SystemDivider
+import com.shadowbody.app.ui.components.SystemProgressBar
+import com.shadowbody.app.ui.components.SystemStatBlock
 import com.shadowbody.app.ui.theme.LocalShadowSpacing
 
 @OptIn(ExperimentalMaterial3Api::class)
@@ -87,7 +90,7 @@ fun ProgressionScreen(
         ) {
             // Level & XP Header
             item {
-                SystemPanel(accentBorder = true) {
+                SystemCard(accent = true) {
                     Column(modifier = Modifier.fillMaxWidth()) {
                         Row(
                             modifier = Modifier.fillMaxWidth(),
@@ -130,7 +133,7 @@ fun ProgressionScreen(
                                     color = MaterialTheme.colorScheme.primary,
                                 )
                             }
-                            androidx.compose.material3.LinearProgressIndicator(
+                            LinearProgressIndicator(
                                 progress = summary.levelProgress,
                                 modifier = Modifier
                                     .fillMaxWidth()
@@ -195,7 +198,7 @@ fun ProgressionScreen(
             item {
                 val achievements = summary.achievements
                 if (achievements.isEmpty()) {
-                    SystemPanel {
+                    SystemCard {
                         Text(
                             text = "No achievements defined.",
                             style = MaterialTheme.typography.bodyMedium,
@@ -205,7 +208,7 @@ fun ProgressionScreen(
                     }
                 } else {
                     achievements.forEach { ach ->
-                        SystemPanel {
+                        SystemCard {
                             Row(
                                 modifier = Modifier.fillMaxWidth(),
                                 horizontalArrangement = Arrangement.SpaceBetween,
@@ -261,7 +264,7 @@ fun ProgressionScreen(
             item {
                 val transactions = summary.recentTransactions
                 if (transactions.isEmpty()) {
-                    SystemPanel {
+                    SystemCard {
                         Text(
                             text = "No XP transactions yet. Complete activities to earn XP.",
                             style = MaterialTheme.typography.bodyMedium,
@@ -271,7 +274,7 @@ fun ProgressionScreen(
                     }
                 } else {
                     transactions.forEach { tx ->
-                        SystemPanel {
+                        SystemCard {
                             Row(
                                 modifier = Modifier.fillMaxWidth(),
                                 horizontalArrangement = Arrangement.SpaceBetween,
@@ -304,7 +307,7 @@ fun ProgressionScreen(
 @Composable
 private fun AttributeCard(label: String, value: Int, modifier: Modifier) {
     val spacing = LocalShadowSpacing.current
-    SystemPanel(modifier = modifier.padding(vertical = spacing.xs)) {
+    SystemCard(modifier = modifier.padding(vertical = spacing.xs)) {
         Column(
             modifier = Modifier.fillMaxWidth(),
             horizontalAlignment = Alignment.CenterHorizontally,

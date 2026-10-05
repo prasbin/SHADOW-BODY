@@ -14,8 +14,6 @@ import androidx.compose.foundation.lazy.LazyColumn
 import androidx.compose.foundation.lazy.items
 import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.filled.Settings
-import androidx.compose.material3.Button
-import androidx.compose.material3.ButtonDefaults
 import androidx.compose.material3.ExperimentalMaterial3Api
 import androidx.compose.material3.Icon
 import androidx.compose.material3.IconButton
@@ -33,8 +31,18 @@ import androidx.compose.ui.platform.testTag
 import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.unit.dp
 import androidx.lifecycle.viewmodel.compose.viewModel
-import com.shadowbody.app.ui.components.SystemPanel
+import com.shadowbody.app.ui.components.SystemActionButton
+import com.shadowbody.app.ui.components.SystemCard
+import com.shadowbody.app.ui.components.SystemDivider
+import com.shadowbody.app.ui.components.SystemStatBlock
+import com.shadowbody.app.ui.components.SystemStatusChip
 import com.shadowbody.app.ui.theme.LocalShadowSpacing
+import com.shadowbody.app.ui.theme.ShadowCyan
+import com.shadowbody.app.ui.theme.ShadowSuccess
+import com.shadowbody.app.ui.theme.ShadowTextMuted
+import com.shadowbody.app.ui.theme.ShadowTextPrimary
+import com.shadowbody.app.ui.theme.ShadowTextSecondary
+import com.shadowbody.app.ui.theme.ShadowViolet
 
 @OptIn(ExperimentalMaterial3Api::class)
 @Composable
@@ -48,7 +56,7 @@ fun DashboardScreen(
     onOpenNutrition: () -> Unit,
     onOpenGrooming: () -> Unit,
     onOpenWardrobe: () -> Unit,
-    onStartTodayWorkout: (Long?) -> Unit,
+    onStartTodayWorkout: (Long) -> Unit,
     viewModel: DashboardViewModel = viewModel(),
 ) {
     val state by viewModel.uiState.collectAsState()
@@ -67,7 +75,7 @@ fun DashboardScreen(
                         Text(
                             text = "SYSTEM ONLINE",
                             style = MaterialTheme.typography.labelSmall,
-                            color = MaterialTheme.colorScheme.primary,
+                            color = ShadowCyan,
                         )
                     }
                 },
@@ -81,8 +89,8 @@ fun DashboardScreen(
                 },
                 colors = TopAppBarDefaults.topAppBarColors(
                     containerColor = MaterialTheme.colorScheme.background,
-                    titleContentColor = MaterialTheme.colorScheme.primary,
-                    actionIconContentColor = MaterialTheme.colorScheme.onSurfaceVariant,
+                    titleContentColor = ShadowCyan,
+                    actionIconContentColor = ShadowTextSecondary,
                 ),
             )
         },
@@ -97,39 +105,27 @@ fun DashboardScreen(
             verticalArrangement = Arrangement.spacedBy(spacing.sm),
         ) {
             item {
-                SystemPanel(accentBorder = true) {
+                SystemCard(accent = true) {
                     Column(modifier = Modifier.fillMaxWidth()) {
                         Row(
                             modifier = Modifier.fillMaxWidth(),
                             horizontalArrangement = Arrangement.SpaceBetween,
                             verticalAlignment = Alignment.CenterVertically,
                         ) {
-                            Column {
-                                Text(
-                                    text = "LEVEL ${state.level.toString().padStart(2, '0')}",
-                                    style = MaterialTheme.typography.headlineMedium,
-                                    color = MaterialTheme.colorScheme.primary,
-                                    fontWeight = FontWeight.Bold,
-                                )
-                                Text(
-                                    text = "${state.totalXp} XP",
-                                    style = MaterialTheme.typography.bodyMedium,
-                                    color = MaterialTheme.colorScheme.onSurface,
-                                )
-                            }
-                            Column(horizontalAlignment = Alignment.End) {
-                                Text(
-                                    text = "${state.currentStreak}",
-                                    style = MaterialTheme.typography.headlineMedium,
-                                    color = MaterialTheme.colorScheme.tertiary,
-                                    fontWeight = FontWeight.Bold,
-                                )
-                                Text(
-                                    text = "STREAK",
-                                    style = MaterialTheme.typography.labelSmall,
-                                    color = MaterialTheme.colorScheme.onSurfaceVariant,
-                                )
-                            }
+                            SystemStatBlock(
+                                label = "LEVEL",
+                                value = state.level.toString().padStart(2, '0'),
+                                accent = true,
+                            )
+                            SystemStatBlock(
+                                label = "XP",
+                                value = state.totalXp.toString(),
+                            )
+                            SystemStatBlock(
+                                label = "STREAK",
+                                value = state.currentStreak.toString(),
+                                accent = true,
+                            )
                         }
                     }
                 }
@@ -139,53 +135,79 @@ fun DashboardScreen(
                 Text(
                     text = "TODAY",
                     style = MaterialTheme.typography.labelMedium,
-                    color = MaterialTheme.colorScheme.primary,
+                    color = ShadowCyan,
                     modifier = Modifier.testTag("todayHeader"),
                 )
             }
 
             if (state.isTrainingDay && state.todayPlanId != null) {
                 item {
-                    SystemPanel(accentBorder = true) {
+                    SystemCard(accent = true) {
                         Column(modifier = Modifier.fillMaxWidth()) {
-                            Text(
-                                text = state.todayPlanName ?: "WORKOUT",
-                                style = MaterialTheme.typography.titleMedium,
-                                color = MaterialTheme.colorScheme.onSurface,
-                            )
-                            Text(
-                                text = "${state.todayEstimatedMinutes} MIN",
-                                style = MaterialTheme.typography.bodySmall,
-                                color = MaterialTheme.colorScheme.onSurfaceVariant,
-                            )
-                            Spacer(modifier = Modifier.height(spacing.sm))
-                            Button(
-                                onClick = { onStartTodayWorkout(state.todayPlanId) },
-                                modifier = Modifier.fillMaxWidth().testTag("startWorkoutButton"),
-                                colors = ButtonDefaults.buttonColors(
-                                    containerColor = MaterialTheme.colorScheme.primary,
-                                    contentColor = MaterialTheme.colorScheme.onPrimary,
-                                ),
+                            Row(
+                                modifier = Modifier.fillMaxWidth(),
+                                horizontalArrangement = Arrangement.SpaceBetween,
+                                verticalAlignment = Alignment.CenterVertically,
                             ) {
-                                Text("START WORKOUT")
+                                Column(modifier = Modifier.weight(1f)) {
+                                    Text(
+                                        text = "TODAY'S WORKOUT",
+                                        style = MaterialTheme.typography.labelSmall,
+                                        color = ShadowTextMuted,
+                                    )
+                                    Text(
+                                        text = state.todayPlanName ?: "WORKOUT",
+                                        style = MaterialTheme.typography.titleMedium,
+                                        color = ShadowTextPrimary,
+                                    )
+                                    Text(
+                                        text = "${state.todayEstimatedMinutes} MIN",
+                                        style = MaterialTheme.typography.bodySmall,
+                                        color = ShadowTextSecondary,
+                                    )
+                                }
+                                SystemStatusChip(
+                                    label = "READY",
+                                    isActive = true,
+                                )
                             }
+                            Spacer(modifier = Modifier.height(spacing.sm))
+                            SystemActionButton(
+                                text = "START WORKOUT",
+                                onClick = { state.todayPlanId?.let { onStartTodayWorkout(it) } },
+                                modifier = Modifier
+                                    .fillMaxWidth()
+                                    .testTag("startWorkoutButton"),
+                            )
                         }
                     }
                 }
             } else if (!state.isTrainingDay) {
                 item {
-                    SystemPanel {
+                    SystemCard {
                         Column(modifier = Modifier.fillMaxWidth()) {
-                            Text(
-                                text = "REST DAY",
-                                style = MaterialTheme.typography.titleMedium,
-                                color = MaterialTheme.colorScheme.onSurface,
-                            )
-                            state.restDayInfo?.let {
-                                Text(
-                                    text = it,
-                                    style = MaterialTheme.typography.bodySmall,
-                                    color = MaterialTheme.colorScheme.onSurfaceVariant,
+                            Row(
+                                modifier = Modifier.fillMaxWidth(),
+                                horizontalArrangement = Arrangement.SpaceBetween,
+                                verticalAlignment = Alignment.CenterVertically,
+                            ) {
+                                Column(modifier = Modifier.weight(1f)) {
+                                    Text(
+                                        text = "REST DAY",
+                                        style = MaterialTheme.typography.titleMedium,
+                                        color = ShadowTextPrimary,
+                                    )
+                                    state.restDayInfo?.let {
+                                        Text(
+                                            text = it,
+                                            style = MaterialTheme.typography.bodySmall,
+                                            color = ShadowTextSecondary,
+                                        )
+                                    }
+                                }
+                                SystemStatusChip(
+                                    label = "RECOVERY",
+                                    isActive = true,
                                 )
                             }
                         }
@@ -197,7 +219,7 @@ fun DashboardScreen(
                 Text(
                     text = "TODAY'S OBJECTIVES",
                     style = MaterialTheme.typography.labelMedium,
-                    color = MaterialTheme.colorScheme.primary,
+                    color = ShadowCyan,
                     modifier = Modifier.testTag("todayObjectivesHeader"),
                 )
             }
@@ -218,7 +240,7 @@ fun DashboardScreen(
             }
 
             items(objectives, key = { it.id }) { obj ->
-                SystemPanel(
+                SystemCard(
                     modifier = Modifier
                         .fillMaxWidth()
                         .clickable { obj.action() }
@@ -233,35 +255,34 @@ fun DashboardScreen(
                             Text(
                                 text = obj.title,
                                 style = MaterialTheme.typography.titleSmall,
-                                color = MaterialTheme.colorScheme.onSurface,
+                                color = ShadowTextPrimary,
                             )
                             Text(
                                 text = obj.subtitle,
                                 style = MaterialTheme.typography.bodySmall,
-                                color = MaterialTheme.colorScheme.onSurfaceVariant,
+                                color = ShadowTextSecondary,
                             )
                         }
-                        Text(
-                            text = "GO",
-                            style = MaterialTheme.typography.labelSmall,
-                            color = MaterialTheme.colorScheme.primary,
+                        SystemStatusChip(
+                            label = "GO",
+                            isActive = true,
                         )
                     }
                 }
             }
 
             item {
-                Spacer(modifier = Modifier.height(spacing.xs))
+                SystemDivider()
                 Text(
                     text = "SYSTEM RECOMMENDATION",
                     style = MaterialTheme.typography.labelMedium,
-                    color = MaterialTheme.colorScheme.primary,
+                    color = ShadowCyan,
                 )
             }
 
             item {
-                SystemPanel(
-                    accentBorder = true,
+                SystemCard(
+                    accent = true,
                     modifier = Modifier
                         .fillMaxWidth()
                         .clickable { onOpenCoach() }
@@ -281,25 +302,25 @@ fun DashboardScreen(
                         Text(
                             text = recommendation,
                             style = MaterialTheme.typography.bodyMedium,
-                            color = MaterialTheme.colorScheme.onSurface,
+                            color = ShadowTextPrimary,
                         )
                         Spacer(modifier = Modifier.height(spacing.xs))
                         Text(
                             text = "VIEW COACH",
                             style = MaterialTheme.typography.labelSmall,
-                            color = MaterialTheme.colorScheme.primary,
+                            color = ShadowCyan,
                         )
                     }
                 }
             }
 
             item {
-                Spacer(modifier = Modifier.height(spacing.xs))
+                SystemDivider()
                 Row(
                     modifier = Modifier.fillMaxWidth(),
                     horizontalArrangement = Arrangement.spacedBy(spacing.sm),
                 ) {
-                    SystemPanel(
+                    SystemCard(
                         modifier = Modifier
                             .weight(1f)
                             .clickable { onOpenTrain() }
@@ -309,16 +330,16 @@ fun DashboardScreen(
                             Text(
                                 text = "TRAIN",
                                 style = MaterialTheme.typography.labelMedium,
-                                color = MaterialTheme.colorScheme.primary,
+                                color = ShadowCyan,
                             )
                             Text(
                                 text = "Workouts",
                                 style = MaterialTheme.typography.bodySmall,
-                                color = MaterialTheme.colorScheme.onSurfaceVariant,
+                                color = ShadowTextSecondary,
                             )
                         }
                     }
-                    SystemPanel(
+                    SystemCard(
                         modifier = Modifier
                             .weight(1f)
                             .clickable { onOpenTrack() }
@@ -328,16 +349,16 @@ fun DashboardScreen(
                             Text(
                                 text = "TRACK",
                                 style = MaterialTheme.typography.labelMedium,
-                                color = MaterialTheme.colorScheme.primary,
+                                color = ShadowCyan,
                             )
                             Text(
                                 text = "Progress",
                                 style = MaterialTheme.typography.bodySmall,
-                                color = MaterialTheme.colorScheme.onSurfaceVariant,
+                                color = ShadowTextSecondary,
                             )
                         }
                     }
-                    SystemPanel(
+                    SystemCard(
                         modifier = Modifier
                             .weight(1f)
                             .clickable { onOpenProfile() }
@@ -347,12 +368,12 @@ fun DashboardScreen(
                             Text(
                                 text = "PROFILE",
                                 style = MaterialTheme.typography.labelMedium,
-                                color = MaterialTheme.colorScheme.primary,
+                                color = ShadowCyan,
                             )
                             Text(
                                 text = "Player",
                                 style = MaterialTheme.typography.bodySmall,
-                                color = MaterialTheme.colorScheme.onSurfaceVariant,
+                                color = ShadowTextSecondary,
                             )
                         }
                     }

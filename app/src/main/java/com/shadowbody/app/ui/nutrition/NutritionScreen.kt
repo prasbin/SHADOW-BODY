@@ -123,7 +123,7 @@ fun NutritionScreen(
         ) {
             item {
                 Spacer(modifier = Modifier.height(spacing.xs))
-                SystemPanel(accentBorder = true) {
+                SystemPanel(accent = true) {
                     Row(
                         modifier = Modifier.fillMaxWidth(),
                         horizontalArrangement = Arrangement.SpaceBetween,
@@ -517,3 +517,4 @@ fun NutritionScreen(
         )
     }
 }
+

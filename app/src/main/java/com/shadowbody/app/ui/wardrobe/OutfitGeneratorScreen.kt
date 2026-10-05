@@ -143,7 +143,7 @@ fun OutfitGeneratorScreen(
                 }
 
                 item {
-                    SystemPanel(accentBorder = true) {
+                    SystemPanel(accent = true) {
                         Column(modifier = Modifier.fillMaxWidth()) {
                             suggestion?.top?.let {
                                 Text(
@@ -246,3 +246,4 @@ fun OutfitGeneratorScreen(
         }
     }
 }
+

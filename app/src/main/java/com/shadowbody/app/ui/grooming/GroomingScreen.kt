@@ -1,4 +1,4 @@
-﻿package com.shadowbody.app.ui.grooming
+package com.shadowbody.app.ui.grooming
 
 import androidx.compose.foundation.clickable
 import androidx.compose.foundation.layout.Arrangement
@@ -79,7 +79,7 @@ fun GroomingScreen(
         ) {
             item {
                 Spacer(modifier = Modifier.height(spacing.xs))
-                SystemPanel(accentBorder = true) {
+                SystemPanel(accent = true) {
                     Row(
                         modifier = Modifier.fillMaxWidth(),
                         horizontalArrangement = Arrangement.SpaceBetween,
@@ -240,3 +240,4 @@ fun GroomingScreen(
         }
     }
 }
+

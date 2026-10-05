@@ -90,7 +90,7 @@ fun WorkoutResultScreen(
             verticalArrangement = Arrangement.spacedBy(spacing.sm),
         ) {
             item {
-                SystemPanel(accentBorder = true) {
+                SystemPanel(accent = true) {
                     Text(
                         text = "[ ${detail.session.name.uppercase()} — ${detail.session.status.name} ]",
                         style = MaterialTheme.typography.titleSmall,
@@ -159,3 +159,4 @@ fun WorkoutResultScreen(
         }
     }
 }
+

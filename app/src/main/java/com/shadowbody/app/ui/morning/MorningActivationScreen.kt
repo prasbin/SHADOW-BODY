@@ -137,7 +137,7 @@ fun MorningActivationScreen(
 
             if (state.history.isEmpty()) {
                 item {
-                    SystemPanel(accentBorder = true) {
+                    SystemPanel(accent = true) {
                         Text(
                             text = "[ NO RUNS YET ]",
                             style = MaterialTheme.typography.titleSmall,
@@ -195,7 +195,7 @@ private fun TodayPanel(
     onResume: (Long) -> Unit,
 ) {
     val spacing = LocalShadowSpacing.current
-    SystemPanel(accentBorder = true) {
+    SystemPanel(accent = true) {
         Text(
             text = "[ ${day.status.name} ]",
             style = MaterialTheme.typography.titleSmall,
@@ -362,3 +362,4 @@ private fun HistoryRow(log: MorningRoutineLog, onOpen: () -> Unit) {
         Spacer(modifier = Modifier.height(spacing.xxs))
     }
 }
+

@@ -97,7 +97,7 @@ fun BaselineHistoryScreen(
                     .padding(horizontal = spacing.md),
                 verticalArrangement = Arrangement.spacedBy(spacing.sm),
             ) {
-                SystemPanel(accentBorder = true) {
+                SystemPanel(accent = true) {
                     Text(
                         text = "[ ARCHIVE EMPTY ]",
                         style = MaterialTheme.typography.titleSmall,
@@ -298,3 +298,4 @@ private fun BaselineInputDialog(
         },
     )
 }
+

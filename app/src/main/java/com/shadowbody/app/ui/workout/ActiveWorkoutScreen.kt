@@ -227,7 +227,7 @@ fun RestTimerPanel(
     onReset: () -> Unit,
 ) {
     val spacing = LocalShadowSpacing.current
-    SystemPanel(accentBorder = rest.phase == RestPhase.RUNNING) {
+    SystemPanel(accent = rest.phase == RestPhase.RUNNING) {
         SectionHeader(title = "Rest", trailing = rest.phase.name)
         when (rest.phase) {
             RestPhase.IDLE -> {

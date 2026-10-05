@@ -83,7 +83,7 @@ fun CoachScreen(
             verticalArrangement = Arrangement.spacedBy(spacing.sm),
         ) {
             item {
-                SystemPanel(accentBorder = true) {
+                SystemPanel(accent = true) {
                     Column(modifier = Modifier.fillMaxWidth()) {
                         Text(
                             text = "SYSTEM COACH ONLINE",
@@ -108,7 +108,7 @@ fun CoachScreen(
                 }
 
                 item {
-                    SystemPanel(accentBorder = true) {
+                    SystemPanel(accent = true) {
                         Column(
                             modifier = Modifier
                                 .fillMaxWidth()
@@ -219,3 +219,4 @@ fun CoachScreen(
         }
     }
 }
+

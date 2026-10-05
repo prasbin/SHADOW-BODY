@@ -34,7 +34,9 @@ import com.shadowbody.app.data.local.WorkoutSession
 import com.shadowbody.app.domain.model.SessionStatus
 import com.shadowbody.app.ui.components.SectionHeader
 import com.shadowbody.app.ui.components.StatCard
-import com.shadowbody.app.ui.components.SystemPanel
+import com.shadowbody.app.ui.components.SystemCard
+import com.shadowbody.app.ui.components.SystemDivider
+import com.shadowbody.app.ui.components.SystemStatBlock
 import com.shadowbody.app.ui.profile.formatRecordedAt
 import com.shadowbody.app.ui.theme.LocalShadowSpacing
 
@@ -69,7 +71,7 @@ fun WorkoutListScreen(
             )
         },
         floatingActionButton = {
-            FloatingActionButton(
+            androidx.compose.material3.FloatingActionButton(
                 onClick = onNewPlan,
                 modifier = Modifier.testTag("planNew"),
                 containerColor = MaterialTheme.colorScheme.primary,
@@ -114,7 +116,7 @@ fun WorkoutListScreen(
             item { SectionHeader(title = "Plans", trailing = "${plans.size} ACTIVE") }
             if (plans.isEmpty()) {
                 item {
-                    SystemPanel(accentBorder = true) {
+                    SystemCard(accent = true) {
                         Text(
                             text = "[ TRAINING SCHEDULE ]",
                             style = MaterialTheme.typography.titleSmall,
@@ -137,7 +139,7 @@ fun WorkoutListScreen(
             item { SectionHeader(title = "History", trailing = "${sessions.size} RECENT") }
             if (sessions.isEmpty()) {
                 item {
-                    SystemPanel {
+                    SystemCard {
                         Text(
                             text = "No workouts recorded yet. Finished sessions appear here.",
                             style = MaterialTheme.typography.bodySmall,
@@ -152,7 +154,7 @@ fun WorkoutListScreen(
             }
 
             item {
-                SystemPanel {
+                SystemCard {
                     Text(
                         text = "Train within your limits. Stop if you feel pain, dizziness, or " +
                             "unusual discomfort, and consult a qualified professional " +
@@ -160,8 +162,8 @@ fun WorkoutListScreen(
                         style = MaterialTheme.typography.bodySmall,
                         color = MaterialTheme.colorScheme.onSurfaceVariant,
                     )
+                    Spacer(modifier = Modifier.height(80.dp))
                 }
-                Spacer(modifier = Modifier.height(80.dp))
             }
         }
     }
@@ -169,7 +171,7 @@ fun WorkoutListScreen(
 
 @Composable
 private fun PlanRow(plan: WorkoutPlan, onClick: () -> Unit) {
-    SystemPanel {
+    SystemCard {
         Row(
             modifier = Modifier.fillMaxWidth(),
             horizontalArrangement = Arrangement.SpaceBetween,
@@ -189,7 +191,7 @@ private fun PlanRow(plan: WorkoutPlan, onClick: () -> Unit) {
                     )
                 }
             }
-            Button(
+            androidx.compose.material3.Button(
                 onClick = onClick,
                 modifier = Modifier.testTag("plan:${plan.id}"),
                 colors = ButtonDefaults.buttonColors(
@@ -205,7 +207,7 @@ private fun PlanRow(plan: WorkoutPlan, onClick: () -> Unit) {
 
 @Composable
 private fun SessionRow(session: WorkoutSession, onClick: () -> Unit) {
-    SystemPanel {
+    SystemCard {
         Row(
             modifier = Modifier.fillMaxWidth(),
             horizontalArrangement = Arrangement.SpaceBetween,
@@ -235,7 +237,7 @@ private fun SessionRow(session: WorkoutSession, onClick: () -> Unit) {
                     color = color,
                     modifier = Modifier.testTag("session:${session.id}:$label"),
                 )
-                Button(
+                androidx.compose.material3.Button(
                     onClick = onClick,
                     colors = ButtonDefaults.buttonColors(
                         containerColor = MaterialTheme.colorScheme.primary.copy(alpha = 0.15f),

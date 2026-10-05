@@ -29,7 +29,8 @@ import androidx.compose.ui.platform.testTag
 import com.shadowbody.app.data.local.UserProfile
 import com.shadowbody.app.ui.components.SectionHeader
 import com.shadowbody.app.ui.components.StatCard
-import com.shadowbody.app.ui.components.SystemPanel
+import com.shadowbody.app.ui.components.SystemCard
+import com.shadowbody.app.ui.components.SystemDivider
 import com.shadowbody.app.ui.theme.LocalShadowSpacing
 
 /**
@@ -73,7 +74,7 @@ fun ProfileScreen(
             verticalArrangement = Arrangement.spacedBy(spacing.sm),
         ) {
             if (profile == null) {
-                SystemPanel(accentBorder = true) {
+                SystemCard(accent = true) {
                     Text(
                         text = "[ PROFILE NOT CONFIGURED ]",
                         style = MaterialTheme.typography.titleSmall,
@@ -87,7 +88,7 @@ fun ProfileScreen(
                         color = MaterialTheme.colorScheme.onSurface,
                     )
                 }
-                Button(
+                androidx.compose.material3.Button(
                     onClick = onEdit,
                     modifier = Modifier.fillMaxWidth().testTag("profileCreate"),
                     colors = ButtonDefaults.buttonColors(
@@ -99,7 +100,7 @@ fun ProfileScreen(
                 }
             } else {
                 ProfileSummary(profile = profile, baselineCount = state.baselineCount)
-                Button(
+                androidx.compose.material3.Button(
                     onClick = onEdit,
                     modifier = Modifier.fillMaxWidth().testTag("profileEdit"),
                     colors = ButtonDefaults.buttonColors(
@@ -114,7 +115,7 @@ fun ProfileScreen(
             SectionHeader(title = "Baseline", trailing = "${state.baselineCount} RECORDS")
             val latest = state.latestBaseline
             if (latest == null) {
-                SystemPanel {
+                SystemCard {
                     Text(
                         text = "No baseline recorded yet.",
                         style = MaterialTheme.typography.bodyMedium,
@@ -128,14 +129,14 @@ fun ProfileScreen(
                     )
                 }
             } else {
-                SystemPanel {
+                SystemCard {
                     BaselineLine("Recorded", formatRecordedAt(latest.recordedAt))
                     BaselineLine("Weight", formatKg(latest.weightKg))
                     BaselineLine("Waist", formatCm(latest.waistCm))
                     BaselineLine("Body fat", latest.bodyFatPct?.let { "$it %" } ?: "—")
                 }
             }
-            OutlinedButton(
+            androidx.compose.material3.OutlinedButton(
                 onClick = onOpenBaselineHistory,
                 modifier = Modifier.fillMaxWidth().testTag("baselineHistory"),
             ) {
@@ -169,8 +170,8 @@ private fun ProfileSummary(profile: UserProfile, baselineCount: Int) {
             modifier = Modifier.weight(1f),
         )
     }
-    SystemPanel {
-        SummaryLine("RANK", profile.fitnessLevel.label.uppercase())
+    SystemCard {
+        SummaryLine("RANK", profile.fitnessLevel.name.uppercase())
         SummaryLine("EQUIPMENT", profile.equipment.joinToString(" · ") { it.label })
         SummaryLine("GOALS", profile.goals.joinToString(" · ") { it.label })
         SummaryLine("SCHEDULE", "${formatDays(profile.trainingDays)} · ${profile.sessionMinutes} MIN")

@@ -19,30 +19,33 @@ import com.shadowbody.app.ui.theme.LocalShadowSpacing
 @Composable
 fun SystemPanel(
     modifier: Modifier = Modifier,
-    accentBorder: Boolean = false,
+    accent: Boolean = false,
     content: @Composable ColumnScope.() -> Unit,
 ) {
     val spacing = LocalShadowSpacing.current
     val shape = RoundedCornerShape(spacing.panelCorner)
+    val borderColor = if (accent) {
+        androidx.compose.material3.MaterialTheme.colorScheme.primary.copy(alpha = 0.55f)
+    } else {
+        androidx.compose.material3.MaterialTheme.colorScheme.outline
+    }
     Surface(
         modifier = modifier
             .fillMaxWidth()
-            .then(
-                if (accentBorder) {
-                    Modifier.border(
-                        spacing.panelBorder,
-                        MaterialTheme.colorScheme.primary.copy(alpha = 0.55f),
-                        shape,
-                    )
+            .border(
+                width = LocalShadowSpacing.current.panelBorder,
+                color = if (accent) {
+                    androidx.compose.material3.MaterialTheme.colorScheme.primary.copy(alpha = 0.55f)
                 } else {
-                    Modifier.border(spacing.panelBorder, MaterialTheme.colorScheme.outline, shape)
-                }
+                    androidx.compose.material3.MaterialTheme.colorScheme.outline
+                },
+                shape = androidx.compose.foundation.shape.RoundedCornerShape(LocalShadowSpacing.current.panelCorner),
             ),
-        shape = shape,
-        color = MaterialTheme.colorScheme.surface,
-        tonalElevation = spacing.xxs,
+        shape = androidx.compose.foundation.shape.RoundedCornerShape(LocalShadowSpacing.current.panelCorner),
+        color = androidx.compose.material3.MaterialTheme.colorScheme.surface,
+        tonalElevation = LocalShadowSpacing.current.xxs,
     ) {
-        Column(modifier = Modifier.padding(spacing.md)) {
+        Column(modifier = Modifier.padding(LocalShadowSpacing.current.md)) {
             content()
         }
     }
