@@ -873,6 +873,8 @@ object Migrations {
     /**
      * v10 -> v11: creates the wardrobe_photo_combination table.
      * Purely additive: preserves all Phase 1-10 data.
+     * Matches Room's expected schema exactly: no DEFAULT clauses on NOT NULL columns
+     * (Kotlin-side defaults are applied at entity level), no extra indices.
      */
     val MIGRATION_10_11 = object : Migration(10, 11) {
         override fun migrate(db: SupportSQLiteDatabase) {
@@ -882,14 +884,9 @@ object Migrations {
                     "`position` INTEGER NOT NULL, " +
                     "`label` TEXT NOT NULL, " +
                     "`photoPath` TEXT, " +
-                    "`notes` TEXT NOT NULL DEFAULT '', " +
-                    "`createdAt` INTEGER NOT NULL DEFAULT 0, " +
-                    "`updatedAt` INTEGER NOT NULL DEFAULT 0)",
-            )
-            db.execSQL(
-                "CREATE UNIQUE INDEX IF NOT EXISTS " +
-                    "`index_wardrobe_photo_combination_position` " +
-                    "ON `wardrobe_photo_combination` (`position`)",
+                    "`notes` TEXT NOT NULL, " +
+                    "`createdAt` INTEGER NOT NULL, " +
+                    "`updatedAt` INTEGER NOT NULL)",
             )
         }
     }
