@@ -41,6 +41,8 @@ import com.shadowbody.app.ui.theme.LocalShadowSpacing
 fun GroomingScreen(
     viewModel: GroomingViewModel,
     onBack: () -> Unit,
+    onOpenSkinCheck: () -> Unit,
+    onOpenHaircutAdvice: () -> Unit,
 ) {
     val uiState by viewModel.uiState.collectAsState()
     val spacing = LocalShadowSpacing.current
@@ -116,6 +118,50 @@ fun GroomingScreen(
                             }
                         }
                     }
+                }
+            }
+
+            item {
+                SectionHeader(title = "Daily Skin Check", trailing = "Both cheeks daily")
+            }
+            item {
+                SystemPanel(
+                    modifier = Modifier
+                        .fillMaxWidth()
+                        .clickable(onClick = onOpenSkinCheck)
+                        .testTag("skinCheckEntry"),
+                ) {
+                    Text(
+                        text = "TWO-CHEEK DAILY CHECK",
+                        style = MaterialTheme.typography.titleSmall,
+                        color = MaterialTheme.colorScheme.primary,
+                        modifier = Modifier.testTag("skinCheckEntryTitle"),
+                    )
+                    Text(
+                        text = "One left + one right cheek photo per day. Photos stay on this device.",
+                        style = MaterialTheme.typography.bodySmall,
+                        color = MaterialTheme.colorScheme.onSurfaceVariant,
+                    )
+                }
+            }
+            item {
+                SystemPanel(
+                    modifier = Modifier
+                        .fillMaxWidth()
+                        .clickable(onClick = onOpenHaircutAdvice)
+                        .testTag("haircutAdviceEntry"),
+                ) {
+                    Text(
+                        text = "HAIRCUT ADVICE",
+                        style = MaterialTheme.typography.titleSmall,
+                        color = MaterialTheme.colorScheme.primary,
+                        modifier = Modifier.testTag("haircutEntryTitle"),
+                    )
+                    Text(
+                        text = "Rank fixed barber styles by your preferences — with written barber instructions.",
+                        style = MaterialTheme.typography.bodySmall,
+                        color = MaterialTheme.colorScheme.onSurfaceVariant,
+                    )
                 }
             }
 

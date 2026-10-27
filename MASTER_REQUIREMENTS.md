@@ -320,7 +320,7 @@
 - [x] Wardrobe
 - [x] Deterministic Body Coach
 - [x] Offline/local-first architecture
-- [x] Room migrations v1→v9
+- [x] Room migrations v1→v12 (explicit, non-destructive, exported schemas, instrumented regression tests)
 - [x] v1.0.0 release configuration
 
 ---
@@ -371,5 +371,79 @@
 | 16 | Smart notifications | NOT SATISFIED |
 | 17 | Major unified System UI upgrade | SATISFIED |
 | 20 | AI provider architecture | NOT SATISFIED |
+| 29 | Exercise demonstration videos | PARTIAL (external search resolution implemented; no verified bundled videos) |
+| 30 | Daily two-cheek skin tracking | PARTIAL (full local workflow implemented; no image analysis, by design) |
+| 31 | Daily photo-based outfit recommendation | PARTIAL (full local rule-based workflow; no visual AI, by design) |
+| 32 | Haircut recommendations with visual examples | PARTIAL (text advisor implemented; no licensed imagery bundled) |
 
-**Total new requirements: 13**
+**Total new requirements: 17**
+
+---
+
+## 29. EXERCISE DEMONSTRATION VIDEOS
+
+- [x] Demonstration metadata resolvable per exercise (title, provider, URL, attribution) via `domain/demo/DemoVideoResolver`
+- [x] Watch Demonstration action available in Plan detail and active workout without disrupting timer/set logging
+- [x] External playback via system video/browser app — SHADOW BODY never bundles video or streams it itself
+- [x] Honest "EXTERNAL/YOUTUBE (online)" labelling on every button; no offline playback implied
+- [x] Honest unavailable states: blank exercise name → "unavailable"; no external app/browser → explicit failure state
+- [ ] Verified per-exercise video references (individual video ids are NEVER invented; the app opens a deterministic search query instead)
+- [x] No INTERNET permission added — network use happens in the external app, not in SHADOW BODY
+- [x] Tests: URL determinism/encoding, blank-name refusal, never-claims-verified (`DemoVideoResolverTest`, 5 tests)
+
+**Status: PARTIAL — real, correctly-associated external resolution implemented. Bundled/streamed verified video assets remain unavailable (no licensed source); the search hand-off is the honest fallback and is labelled as such.**
+
+---
+
+## 30. DAILY TWO-CHEEK SKIN TRACKING
+
+- [x] Daily entry points: Dashboard objective ("Skin Check") + Grooming screen panel → `SkinCheckScreen`
+- [x] Exactly two photos per day: one left cheek, one right cheek; camera capture (TakePicture + FileProvider into app-private storage) and gallery pick (Android Photo Picker, no storage permission)
+- [x] Capture guidance: consistent light, distance, angle, no beauty filters
+- [x] Day is complete ONLY when both photographs exist (`isComplete`); honest status line otherwise
+- [x] Review/replace/remove each cheek photo before/after saving; replacing deletes the previous file (no orphans)
+- [x] One record per day enforced by unique `dayKey` (Room index + upsert repository)
+- [x] Photos stored ONLY in app-private `filesDir/skin_cheek_photos`; never in public directories; app pins no storage permission and has no INTERNET permission — no upload path exists
+- [x] Dated history with side-by-side left/right thumbnails and per-day notes (user-entered only)
+- [x] Delete a single day deletes both photo files plus the row, with a confirmation dialog stating the behavior
+- [x] Limitations are honest: the app explains that NO image analysis/condition scoring is performed anywhere (on-device or cloud); exactly two new Room tables, no analysis columns in the schema
+- [x] Conservative guidance: patch testing, avoid mixing strong actives, daily sun protection, seek a qualified clinician for persistent/painful/worsening symptoms; explicitly "not medical advice"
+- [x] Migration v11→v12 additive with exported schema `12.json` + instrumented `Migration11To12Test` (data preservation + constraint/unique-index checks on emulator)
+- [x] Tests: repository lifecycle (lazy creation, completeness, replace/delete file behavior, gallery copy, notes), day-key validation, honest-schema check (`SkinCheckRepositoryTest`, 11 tests; Robolectric)
+
+**Status: PARTIAL — the complete local two-photo daily workflow, history, guidance and file lifecycle are real and tested. Visual analysis of the photos does NOT exist (no on-device model available); the app never claims analysis. A deliberate provider-free design: no stub interface fabricating capability.**
+
+---
+
+## 31. DAILY PHOTO-BASED OUTFIT RECOMMENDATION
+
+- [x] Reuses existing photographed `wardrobe_photo_combination` options — no duplicate wardrobe model/table
+- [x] Real camera/gallery capture of actual outfit photos into app-private `outfit_photos` (replaces previous placeholder path behavior); replaced/removed photo files are deleted
+- [x] Daily flow `OutfitDailyScreen`: add/edit photos, occasion selection (TRAINING / WORK / SOCIAL / HOME), Recommend Today's Outfit action
+- [x] Selection is explicit, deterministic AND honest: keyword matching over the user's own label/notes text (`OutfitRecommenderEngine`), neutral earliest-option fallback declared as such
+- [x] Every explanation text explicitly states "No image analysis was performed — photos are only displayed."; `imageAnalysisUsed` is structurally false
+- [x] Decision persisted (unique `dayKey`), displayed prominently with "Why:" reasoning and history of past decisions; user can pick differently by re-running or editing options
+- [x] Honest refusal when there are no photographed options (empty state, nothing persisted)
+- [x] Existing `OutfitAnalysisProvider`/`LocalRuleBasedOutfitAnalysis` honest architecture preserved and untouched
+- [x] Migration v11→v12 `outfit_daily_decision` table validated on emulator; `Migration11To12Test` passes
+- [x] Weather/activity/formality inputs are taken ONLY from explicit user selections; no weather data exists, so it is never invented
+- [x] Tests: engine rules (8 tests), repository persistence (6 tests)
+
+**Status: PARTIAL — the complete local daily workflow over real photos is implemented and tested. TRUE visual understanding of the photos does NOT exist: no on-device vision model is present and no cloud provider may be used for these wardrobe images without consent and credentials kept out of the APK. Selection is therefore rule-based on user-written labels, and every screen says so.**
+
+---
+
+## 32. HAIRCUT RECOMMENDATIONS WITH VISUAL EXAMPLES
+
+- [x] Haircut Advice section inside the existing Grooming experience (dedicated route accessible from Grooming)
+- [x] Optional preferences: length (SHORT/MEDIUM/LONG), maintenance (LOW/MEDIUM/HIGH), look (PROFESSIONAL/CASUAL/VERSATILE), max styling time (≤5m/≤10m/≤15m/ANY), each toggleable
+- [x] Multiple distinct suggestions (8 fixed catalog entries), ranked deterministically by preference matches
+- [x] Each recommendation includes name, style explanation, maintenance guidance, and concrete "SHOW THIS TO YOUR BARBER" instructions
+- [x] Honest visual-example state: every entry shows "VISUAL EXAMPLE: NOT AVAILABLE" plus an honest note that no image is bundled and the barber text is the reference — no fabricated or invented URLs, no protected character imagery
+- [x] Explicit "no face-shape/hairline/photo analysis" banner — nothing claims analysis of the user's face
+- [x] No uploads, no credentials, works fully offline
+- [x] Tests: filtering, deterministic ranking, complete catalog data, unique ids, no-analysis-language and no-fabricated-visual claims (`HaircutAdvisorTest`, 10 tests)
+
+**Status: PARTIAL — text-based advisor with actionable barber instructions is fully implemented and tested. Licensed/usable example images are NOT available (no permitted source identified); showing no image is the honest state until such assets exist.**
+
+---

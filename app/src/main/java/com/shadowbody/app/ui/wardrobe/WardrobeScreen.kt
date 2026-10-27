@@ -48,6 +48,7 @@ fun WardrobeScreen(
     onEditItem: (Long) -> Unit,
     onOpenOutfitGenerator: () -> Unit,
     onOpenPhotoInput: () -> Unit = {},
+    onOpenOutfitDaily: () -> Unit = {},
 ) {
     val uiItems by viewModel.filteredItems.collectAsState()
     val searchQuery by viewModel.searchQuery.collectAsState()
@@ -111,6 +112,27 @@ fun WardrobeScreen(
 
             item {
                 SectionHeader(title = "Categories", trailing = "${uiItems.size} items")
+            }
+
+            item {
+                SystemPanel(
+                    modifier = Modifier
+                        .fillMaxWidth()
+                        .clickable(onClick = onOpenOutfitDaily)
+                        .testTag("outfitDailyEntry"),
+                ) {
+                    Text(
+                        text = "TODAY'S OUTFIT",
+                        style = MaterialTheme.typography.titleSmall,
+                        color = MaterialTheme.colorScheme.primary,
+                        modifier = Modifier.testTag("outfitDailyEntryTitle"),
+                    )
+                    Text(
+                        text = "Recommend today's pick from your photographed combinations.",
+                        style = MaterialTheme.typography.bodySmall,
+                        color = MaterialTheme.colorScheme.onSurfaceVariant,
+                    )
+                }
             }
 
             item {

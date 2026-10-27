@@ -10,6 +10,9 @@ import com.shadowbody.app.data.repository.ExerciseRepository
 import com.shadowbody.app.data.repository.GroomingRepository
 import com.shadowbody.app.data.repository.WardrobeRepository
 import com.shadowbody.app.data.repository.OutfitRepository
+import com.shadowbody.app.data.repository.SkinCheckRepository
+import com.shadowbody.app.data.repository.OutfitDailyRepository
+import com.shadowbody.app.data.repository.PrivatePhotoStorage
 import com.shadowbody.app.data.repository.MorningActivationRepository
 import com.shadowbody.app.data.repository.MorningRoutineRepository
 import com.shadowbody.app.data.repository.NutritionRepository
@@ -142,6 +145,26 @@ class ShadowBodyApp : Application() {
 
     val outfitRepository: OutfitRepository by lazy {
         OutfitRepository(database.outfitRecordDao())
+    }
+
+    // --- Feature B / C repositories (skin photos, daily outfit decision) ---
+
+    val photoStorage: PrivatePhotoStorage by lazy {
+        PrivatePhotoStorage(this)
+    }
+
+    val skinCheckRepository: SkinCheckRepository by lazy {
+        SkinCheckRepository(
+            dao = database.skinCheckDao(),
+            fileOps = photoStorage,
+        )
+    }
+
+    val outfitDailyRepository: OutfitDailyRepository by lazy {
+        OutfitDailyRepository(
+            decisionDao = database.outfitDailyDecisionDao(),
+            combinationDao = database.wardrobePhotoCombinationDao(),
+        )
     }
 
     // --- Automatic training orchestration ---

@@ -28,6 +28,9 @@ object Routes {
     const val WARDROBE_ITEM_EDITOR = "wardrobe_item?itemId={itemId}"
     const val OUTFIT_GENERATOR = "outfit_generator"
     const val WARDROBE_PHOTO_INPUT = "wardrobe_photo_input"
+    const val OUTFIT_DAILY = "outfit_daily"
+    const val SKIN_CHECK = "skin_check"
+    const val HAIRCUT_ADVICE = "haircut_advice"
     const val COACH = "coach"
 
     /** Every route registered in the NavHost. Used by tests to catch typos. */
@@ -38,6 +41,7 @@ object Routes {
         PROGRESSION, PROGRESSION_HISTORY,
         GROOMING, GROOMING_RUN, GROOMING_EDITOR,
         WARDROBE, WARDROBE_ITEM_EDITOR, OUTFIT_GENERATOR, WARDROBE_PHOTO_INPUT,
+        OUTFIT_DAILY, SKIN_CHECK, HAIRCUT_ADVICE,
         COACH,
     )
 

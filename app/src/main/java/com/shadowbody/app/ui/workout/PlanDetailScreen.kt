@@ -142,6 +142,10 @@ fun PlanDetailScreen(
                                     modifier = Modifier.testTag("missing:${slot.slot.id}"),
                                 )
                             }
+                            WatchDemonstrationAction(
+                                exerciseName = slot.exercise.name,
+                                modifier = Modifier.testTag("planDemoSlot:${slot.slot.id}"),
+                            )
                         }
                     }
                 }

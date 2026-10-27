@@ -133,6 +133,12 @@ private fun ExerciseBlock(
             )
         }
         Spacer(modifier = Modifier.height(spacing.xs))
+        // Feature A: external form-demonstration, kept visually quiet so the
+        // workout timer/set logging flow is untouched.
+        WatchDemonstrationAction(
+            exerciseName = detail.exercise.name,
+            modifier = Modifier.testTag("activeDemo:${detail.exercise.name}"),
+        )
         detail.sets.forEach { set ->
             SetRow(
                 position = detail.sessionExercise.position,

@@ -29,6 +29,8 @@ import androidx.room.TypeConverters
  *   (see [Migrations.MIGRATION_7_8]).
  * - v9: + wardrobe MVP — [WardrobeItem], [OutfitRecord]
  *   (see [Migrations.MIGRATION_8_9]).
+ * - v12: + daily skin check ([SkinCheckRecord]), + daily outfit decision
+ *   ([OutfitDailyDecision]) (see [Migrations.MIGRATION_11_12]).
  *
  * Every version bump ships an explicit Migration; destructive fallback is
  * never enabled. Schemas are exported to `app/schemas` and committed.
@@ -69,6 +71,8 @@ import androidx.room.TypeConverters
         WardrobeItem::class,
         OutfitRecord::class,
         WardrobePhotoCombination::class,
+        SkinCheckRecord::class,
+        OutfitDailyDecision::class,
     ],
     version = ShadowBodyDatabase.VERSION,
     exportSchema = true,
@@ -104,9 +108,11 @@ abstract class ShadowBodyDatabase : RoomDatabase() {
     abstract fun wardrobeItemDao(): WardrobeItemDao
     abstract fun outfitRecordDao(): OutfitRecordDao
     abstract fun wardrobePhotoCombinationDao(): WardrobePhotoCombinationDao
+    abstract fun skinCheckDao(): SkinCheckDao
+    abstract fun outfitDailyDecisionDao(): OutfitDailyDecisionDao
 
     companion object {
-        const val VERSION = 11
+        const val VERSION = 12
         const val NAME = "shadow_body.db"
 
         @Volatile
@@ -119,18 +125,7 @@ abstract class ShadowBodyDatabase : RoomDatabase() {
                     ShadowBodyDatabase::class.java,
                     NAME,
                 )
-                    .addMigrations(
-                        Migrations.MIGRATION_1_2,
-                        Migrations.MIGRATION_2_3,
-                        Migrations.MIGRATION_3_4,
-                        Migrations.MIGRATION_4_5,
-                        Migrations.MIGRATION_5_6,
-                        Migrations.MIGRATION_6_7,
-                        Migrations.MIGRATION_7_8,
-                        Migrations.MIGRATION_8_9,
-                        Migrations.MIGRATION_9_10,
-                        Migrations.MIGRATION_10_11,
-                    )
+                    .addMigrations(*Migrations.MIGRATION_ALL)
                     .build().also { instance = it }
             }
 

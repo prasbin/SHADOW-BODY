@@ -56,6 +56,7 @@ fun DashboardScreen(
     onOpenNutrition: () -> Unit,
     onOpenGrooming: () -> Unit,
     onOpenWardrobe: () -> Unit,
+    onOpenSkinCheck: () -> Unit,
     onStartTodayWorkout: (Long) -> Unit,
     viewModel: DashboardViewModel = viewModel(),
 ) {
@@ -237,6 +238,7 @@ fun DashboardScreen(
                 if (state.wardrobeItemCount > 0) {
                     add(Objective("outfit", "Outfit", "Generate today's outfit", onOpenWardrobe))
                 }
+                add(Objective("skin", "Skin Check", "Today's two-cheek photos", onOpenSkinCheck))
             }
 
             items(objectives, key = { it.id }) { obj ->

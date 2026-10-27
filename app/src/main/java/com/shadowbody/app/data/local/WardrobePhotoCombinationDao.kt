@@ -33,4 +33,7 @@ interface WardrobePhotoCombinationDao {
 
     @Query("SELECT COUNT(*) FROM wardrobe_photo_combination")
     suspend fun count(): Int
+
+    @Query("SELECT * FROM wardrobe_photo_combination ORDER BY position")
+    suspend fun snapshotOrderedByPosition(): List<WardrobePhotoCombination>
 }

@@ -55,6 +55,11 @@ import com.shadowbody.app.ui.wardrobe.OutfitViewModel
 import com.shadowbody.app.ui.wardrobe.OutfitGeneratorScreen
 import com.shadowbody.app.ui.wardrobe.WardrobePhotoInputViewModel
 import com.shadowbody.app.ui.wardrobe.WardrobePhotoInputScreen
+import com.shadowbody.app.ui.skin.SkinCheckViewModel
+import com.shadowbody.app.ui.skin.SkinCheckScreen
+import com.shadowbody.app.ui.outfit.OutfitDailyViewModel
+import com.shadowbody.app.ui.outfit.OutfitDailyScreen
+import com.shadowbody.app.ui.haircut.HaircutAdviceScreen
 import com.shadowbody.app.ui.coach.CoachViewModel
 import com.shadowbody.app.ui.coach.CoachScreen
 import com.shadowbody.app.ui.progression.ProgressionScreen
@@ -104,6 +109,7 @@ fun ShadowBodyNavHost() {
                 onOpenNutrition = { navController.navigate(Routes.NUTRITION) },
                 onOpenGrooming = { navController.navigate(Routes.GROOMING) },
                 onOpenWardrobe = { navController.navigate(Routes.WARDROBE) },
+                onOpenSkinCheck = { navController.navigate(Routes.SKIN_CHECK) },
                 onStartTodayWorkout = { planId ->
                     planId?.let { navController.navigate(Routes.activeWorkout(it)) }
                 },
@@ -372,6 +378,8 @@ fun ShadowBodyNavHost() {
             GroomingScreen(
                 viewModel = vm,
                 onBack = { navController.popBackStack() },
+                onOpenSkinCheck = { navController.navigate(Routes.SKIN_CHECK) },
+                onOpenHaircutAdvice = { navController.navigate(Routes.HAIRCUT_ADVICE) },
             )
         }
         composable(
@@ -422,6 +430,7 @@ fun ShadowBodyNavHost() {
                 onEditItem = { itemId -> navController.navigate(Routes.wardrobeItemEditor(itemId)) },
                 onOpenOutfitGenerator = { navController.navigate(Routes.OUTFIT_GENERATOR) },
                 onOpenPhotoInput = { navController.navigate(Routes.WARDROBE_PHOTO_INPUT) },
+                onOpenOutfitDaily = { navController.navigate(Routes.OUTFIT_DAILY) },
             )
         }
         composable(
@@ -454,9 +463,26 @@ fun ShadowBodyNavHost() {
             WardrobePhotoInputScreen(
                 viewModel = vm,
                 onBack = { navController.popBackStack() },
-                onAddPhoto = { position ->
-                    vm.addPhoto(position, "/local/photo_${position}.jpg")
-                },
+            )
+        }
+        composable(Routes.OUTFIT_DAILY) {
+            val vm: OutfitDailyViewModel = viewModel(factory = OutfitDailyViewModel.Factory(app))
+            OutfitDailyScreen(
+                viewModel = vm,
+                onBack = { navController.popBackStack() },
+                onOpenPhotoInput = { navController.navigate(Routes.WARDROBE_PHOTO_INPUT) },
+            )
+        }
+        composable(Routes.SKIN_CHECK) {
+            val vm: SkinCheckViewModel = viewModel(factory = SkinCheckViewModel.Factory(app))
+            SkinCheckScreen(
+                viewModel = vm,
+                onBack = { navController.popBackStack() },
+            )
+        }
+        composable(Routes.HAIRCUT_ADVICE) {
+            HaircutAdviceScreen(
+                onBack = { navController.popBackStack() },
             )
         }
         composable(Routes.COACH) {

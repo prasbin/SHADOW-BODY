@@ -890,4 +890,53 @@ object Migrations {
             )
         }
     }
+
+    /**
+     * v11 -> v12: adds the Feature B `skin_check_record` table and the
+     * Feature C `outfit_daily_decision` table. Purely additive; preserves
+     * all Phase 1-11 data. Matches Room's exported v12 schema exactly:
+     * no DEFAULT clauses (Kotlin-side defaults are entity-level), unique
+     * index on `dayKey` prevents duplicate daily records in both tables.
+     */
+    val MIGRATION_11_12 = object : Migration(11, 12) {
+        override fun migrate(db: SupportSQLiteDatabase) {
+            db.execSQL(
+                "CREATE TABLE IF NOT EXISTS `skin_check_record` (" +
+                    "`id` INTEGER PRIMARY KEY AUTOINCREMENT NOT NULL, " +
+                    "`dayKey` TEXT NOT NULL, " +
+                    "`leftCheekPhotoPath` TEXT, " +
+                    "`leftCheekCaptureMethod` TEXT, " +
+                    "`rightCheekPhotoPath` TEXT, " +
+                    "`rightCheekCaptureMethod` TEXT, " +
+                    "`notes` TEXT NOT NULL, " +
+                    "`recordedAt` INTEGER NOT NULL, " +
+                    "`updatedAt` INTEGER NOT NULL)",
+            )
+            db.execSQL(
+                "CREATE UNIQUE INDEX IF NOT EXISTS `index_skin_check_record_dayKey` " +
+                    "ON `skin_check_record` (`dayKey`)",
+            )
+            db.execSQL(
+                "CREATE TABLE IF NOT EXISTS `outfit_daily_decision` (" +
+                    "`id` INTEGER PRIMARY KEY AUTOINCREMENT NOT NULL, " +
+                    "`dayKey` TEXT NOT NULL, " +
+                    "`selectedCombinationId` INTEGER NOT NULL, " +
+                    "`candidateIds` TEXT NOT NULL, " +
+                    "`occasion` TEXT NOT NULL, " +
+                    "`explanation` TEXT NOT NULL, " +
+                    "`decidedAt` INTEGER NOT NULL, " +
+                    "`updatedAt` INTEGER NOT NULL)",
+            )
+            db.execSQL(
+                "CREATE UNIQUE INDEX IF NOT EXISTS `index_outfit_daily_decision_dayKey` " +
+                    "ON `outfit_daily_decision` (`dayKey`)",
+            )
+        }
+    }
+
+    val MIGRATION_ALL: Array<Migration> = arrayOf(
+        MIGRATION_1_2, MIGRATION_2_3, MIGRATION_3_4, MIGRATION_4_5,
+        MIGRATION_5_6, MIGRATION_6_7, MIGRATION_7_8, MIGRATION_8_9,
+        MIGRATION_9_10, MIGRATION_10_11, MIGRATION_11_12,
+    )
 }
